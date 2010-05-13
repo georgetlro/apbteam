@@ -408,12 +408,16 @@ ai__LOADER_LOAD_UPING__elevator_failed (void)
 
 /*
  * LOADER_LOAD_UNLOADING =elevator_succeed=>
- *  => LOADER_LOAD_UNLOADING_OPEN
+ * choucroute => LOADER_HACK_MATCH1
+ * merguez => LOADER_LOAD_UNLOADING_OPEN
  */
 fsm_branch_t
 ai__LOADER_LOAD_UNLOADING__elevator_succeed (void)
 {
-    return ai_next (LOADER_LOAD_UNLOADING, elevator_succeed);
+    if (loader_choucroute)
+	return ai_next_branch (LOADER_LOAD_UNLOADING, elevator_succeed, choucroute);
+    else
+	return ai_next_branch (LOADER_LOAD_UNLOADING, elevator_succeed, merguez);
 }
 
 /*
@@ -448,5 +452,15 @@ fsm_branch_t
 ai__LOADER_LOAD_EMPTY_OPEN__clamp_succeed (void)
 {
     return ai_next (LOADER_LOAD_EMPTY_OPEN, clamp_succeed);
+}
+
+/*
+ * LOADER_HACK_MATCH1 =state_timeout=>
+ *  => LOADER_LOAD_UNLOADING_OPEN
+ */
+fsm_branch_t
+ai__LOADER_HACK_MATCH1__state_timeout (void)
+{
+    return ai_next (LOADER_HACK_MATCH1, state_timeout);
 }
 

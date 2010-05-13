@@ -39,7 +39,8 @@ top_init (void)
 uint8_t
 top_collect (uint8_t force)
 {
-    if (loader_elements < 3 || force)
+    static uint8_t max = 3;
+    if (loader_elements < max || force)
       {
 	position_t robot_position;
 	asserv_get_position (&robot_position);
@@ -49,6 +50,8 @@ top_collect (uint8_t force)
 	vect_t food_v;
 	food_pos (food, &food_v);
 	move_start_noangle (food_v, 0);
+	max--;
+	if (max == 0) max = 1;
 	return 1;
       }
     else

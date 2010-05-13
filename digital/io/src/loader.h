@@ -28,6 +28,8 @@
 /** Number of loaded elements. */
 extern uint8_t loader_elements;
 
+extern uint8_t loader_choucroute;
+
 /** Move loader up, in a rest position. */
 void
 loader_up (void);

@@ -307,18 +307,17 @@ ai__UNLOAD_BACK_BIN__bot_move_failed (void)
 
 /*
  * UNLOAD_UNLOAD =state_timeout=>
- *  => COLLECT
+ *  => HACK_MATCH1
  *   close gate
- *   loader down
- *   choose best food to collect
+ *   move to hack position
  */
 fsm_branch_t
 ai__UNLOAD_UNLOAD__state_timeout (void)
 {
     loader_elements = 0;
     asserv_move_motor1_absolute (BOT_GATE_STROKE_STEP, BOT_GATE_SPEED);
-    loader_down ();
-    top_collect (1);
+    position_t pos = PG_POSITION_DEG (2400, 378, 29);
+    move_start (pos, 0);
     return ai_next (UNLOAD_UNLOAD, state_timeout);
 }
 
@@ -348,5 +347,20 @@ ai__COLLECT__move_fsm_failed (void)
 	return ai_next_branch (COLLECT, move_fsm_failed, collect);
     else
 	return ai_next_branch (COLLECT, move_fsm_failed, unload);
+}
+
+/*
+ * HACK_MATCH1 =move_fsm_succeed=>
+ *  => COLLECT
+ *   loader down
+ *   choose best food to collect
+ */
+fsm_branch_t
+ai__HACK_MATCH1__move_fsm_succeed (void)
+{
+    loader_down ();
+    top_collect (1);
+    loader_choucroute = 1;
+    return ai_next (HACK_MATCH1, move_fsm_succeed);
 }
 

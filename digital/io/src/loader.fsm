@@ -51,6 +51,7 @@ States:
   check clamp is open
  LOADER_LOAD_EMPTY_OPEN
   open clamp due to no elements to pick
+ LOADER_HACK_MATCH1[timeout=225]
 
 Events:
  elevator_succeed
@@ -182,9 +183,13 @@ LOADER_LOAD_UPING:
   post loader_errored event
 
 LOADER_LOAD_UNLOADING:
- elevator_succeed -> LOADER_LOAD_UNLOADING_OPEN
+ elevator_succeed: choucroute -> LOADER_HACK_MATCH1
+ elevator_succeed: merguez -> LOADER_LOAD_UNLOADING_OPEN
  elevator_failed -> LOADER_ERROR
   post loader_errored event
+
+LOADER_HACK_MATCH1:
+ state_timeout -> LOADER_LOAD_UNLOADING_OPEN
 
 LOADER_LOAD_UNLOADING_OPEN:
  clamp_succeed -> LOADER_DOWNING

@@ -29,6 +29,7 @@ States:
   unloading, wait
  COLLECT
   collecting elements
+ HACK_MATCH1
 
 Events:
  start
@@ -127,8 +128,12 @@ UNLOAD_BACK_BIN:
   unload
 
 UNLOAD_UNLOAD:
- state_timeout -> COLLECT
+ state_timeout -> HACK_MATCH1
   close gate
+  move to hack position
+
+HACK_MATCH1:
+ move_fsm_succeed -> COLLECT
   loader down
   choose best food to collect
 
