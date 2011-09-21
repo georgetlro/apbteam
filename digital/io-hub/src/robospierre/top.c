@@ -101,6 +101,7 @@ struct top_t top_global;
 FSM_TRANS (TOP_START, init_start_round, TOP_GOING_OUT1)
 {
     element_init ();
+    ctx.broken = 1;
     ctx.green_again = 3;
     asserv_goto (PG_X (PG_GREEN_WIDTH_MM + 100),
 		 PG_Y (PG_LENGTH - 200), 0);
@@ -153,18 +154,18 @@ top_go_element (void)
     asserv_get_position (&robot_pos);
     ctx.target_element_id = element_best (robot_pos);
     element_t e = element_get (ctx.target_element_id);
-    if (!ctx.broken)
+    if (e.attr & ELEMENT_GREEN)
       {
-	if (e.attr & ELEMENT_GREEN)
-	  {
+	if (!ctx.broken)
 	    logistic_global.prepare = 0;
-	    pawn_sensor_bumper_enable (0);
-	  }
 	else
-	  {
 	    logistic_global.prepare = top_prepare_level ();
-	    pawn_sensor_bumper_enable (1);
-	  }
+	pawn_sensor_bumper_enable (0);
+      }
+    else
+      {
+	logistic_global.prepare = top_prepare_level ();
+	pawn_sensor_bumper_enable (1);
       }
     vect_t element_pos = element_get_pos (ctx.target_element_id);
     top_go_this_element (element_pos, 0);
@@ -179,8 +180,7 @@ top_go_drop (void)
     ctx.target_element_id = element_unload_best (robot_pos);
     position_t drop_pos;
     drop_pos.v = element_get_pos (ctx.target_element_id);
-    if (!ctx.broken)
-	logistic_global.prepare = top_prepare_level ();
+    logistic_global.prepare = top_prepare_level ();
     pawn_sensor_bumper_enable (0);
     uint8_t backward = logistic_global.collect_direction == DIRECTION_FORWARD
 	? 0 : ASSERV_BACKWARD;

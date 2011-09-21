@@ -64,8 +64,8 @@ struct element_t element_table[] =
     {ELEMENT_NONE | ELEMENT_PAWN, {1500 + 1 * 350, 2 * 350}, ELEMENT_INTERSEC | ELEMENT_RIGHT, 30, 0, 0},
     {ELEMENT_NONE | ELEMENT_PAWN, {1500 - 2 * 350, 1 * 350}, ELEMENT_INTERSEC | ELEMENT_LEFT, 0, 0, 0}, /* 5th line left */
     {ELEMENT_NONE | ELEMENT_PAWN, {1500 + 2 * 350, 1 * 350}, ELEMENT_INTERSEC | ELEMENT_RIGHT, 0, 0, 0},
-    {ELEMENT_NONE | ELEMENT_PAWN, {1500 - 1 * 350, 1 * 350}, ELEMENT_INTERSEC | ELEMENT_LEFT, -30, 0, 0},
-    {ELEMENT_NONE | ELEMENT_PAWN, {1500 + 1 * 350, 1 * 350}, ELEMENT_INTERSEC | ELEMENT_RIGHT, -30, 0, 0},
+    {ELEMENT_NONE | ELEMENT_PAWN, {1500 - 1 * 350, 1 * 350}, ELEMENT_INTERSEC | ELEMENT_LEFT, -99, 0, 0},
+    {ELEMENT_NONE | ELEMENT_PAWN, {1500 + 1 * 350, 1 * 350}, ELEMENT_INTERSEC | ELEMENT_RIGHT, -99, 0, 0},
 
     /* Central pawn. (see ELEMENT_CENTRAL_PAWN) */
     {ELEMENT_PAWN, {1500, 3 * 350}, ELEMENT_INTERSEC | ELEMENT_CENTER, 30, 0, 0},
@@ -91,12 +91,12 @@ struct element_t element_table[] =
        Altern colors in order to retrieve position % 2.
        See ELEMENT_UNLOAD_START and ELEMENT_UNLOAD_END
     */
-    {ELEMENT_NONE | ELEMENT_ANY, {1500 - 2 * 350 - 175, 5 * 350 + 175}, ELEMENT_CENTER | ELEMENT_RIGHT, 0, 0, 0}, /* Top left blue */
-    {ELEMENT_NONE | ELEMENT_ANY, {1500 - 1 * 350 - 175, 5 * 350 + 175}, ELEMENT_CENTER | ELEMENT_LEFT, 0, 10, 0},
-    {ELEMENT_NONE | ELEMENT_ANY, {1500 - 0 * 350 - 175, 5 * 350 + 175}, ELEMENT_CENTER | ELEMENT_RIGHT, 0, 0, 0},
-    {ELEMENT_NONE | ELEMENT_ANY, {1500 + 0 * 350 + 175, 5 * 350 + 175}, ELEMENT_CENTER | ELEMENT_LEFT, 0, 0, 0},
-    {ELEMENT_NONE | ELEMENT_ANY, {1500 + 1 * 350 + 175, 5 * 350 + 175}, ELEMENT_CENTER | ELEMENT_RIGHT, 0, 10, 0},
-    {ELEMENT_NONE | ELEMENT_ANY, {1500 + 2 * 350 + 175, 5 * 350 + 175}, ELEMENT_CENTER | ELEMENT_LEFT, 0, 0, 0},
+    {ELEMENT_NONE | ELEMENT_ANY, {1500 - 2 * 350 - 175, 5 * 350 + 175}, ELEMENT_CENTER | ELEMENT_RIGHT, -100, 0, 0}, /* Top left blue */
+    {ELEMENT_NONE | ELEMENT_ANY, {1500 - 1 * 350 - 175, 5 * 350 + 175}, ELEMENT_CENTER | ELEMENT_LEFT, -100, 10, 0},
+    {ELEMENT_NONE | ELEMENT_ANY, {1500 - 0 * 350 - 175, 5 * 350 + 175}, ELEMENT_CENTER | ELEMENT_RIGHT, -100, 0, 0},
+    {ELEMENT_NONE | ELEMENT_ANY, {1500 + 0 * 350 + 175, 5 * 350 + 175}, ELEMENT_CENTER | ELEMENT_LEFT, -100, 0, 0},
+    {ELEMENT_NONE | ELEMENT_ANY, {1500 + 1 * 350 + 175, 5 * 350 + 175}, ELEMENT_CENTER | ELEMENT_RIGHT, -100, 10, 0},
+    {ELEMENT_NONE | ELEMENT_ANY, {1500 + 2 * 350 + 175, 5 * 350 + 175}, ELEMENT_CENTER | ELEMENT_LEFT, -100, 0, 0},
     {ELEMENT_NONE | ELEMENT_ANY, {1500 - 2 * 350 - 175, 4 * 350 + 175}, ELEMENT_CENTER | ELEMENT_LEFT, 0, 0, 0}, /* 2nd line left red */
     {ELEMENT_NONE | ELEMENT_ANY, {1500 - 1 * 350 - 175, 4 * 350 + 175}, ELEMENT_CENTER | ELEMENT_RIGHT | ELEMENT_BONUS, 0, 10, 0}, /* bonus */
     {ELEMENT_NONE | ELEMENT_ANY, {1500 - 0 * 350 - 175, 4 * 350 + 175}, ELEMENT_CENTER | ELEMENT_LEFT, 0, 0, 0},
@@ -278,6 +278,10 @@ element_score (position_t robot_pos, uint8_t element_id)
     /* Failed element. */
     if (e.failure_until_s
 	&& e.failure_until_s + failure_offset_s < (int) (chrono_remaining_time () / 1000))
+	return -1;
+
+    /* Forbidden element. */
+    if (e.bonus_load == -100)
 	return -1;
 
     if (e.type == ELEMENT_KING)

@@ -654,13 +654,13 @@ FSM_TRANS (CLAMP_INIT_GOING_REST, clamp_move_success, CLAMP_INIT_READY)
     return FSM_NEXT (CLAMP_INIT_GOING_REST, clamp_move_success);
 }
 
-FSM_TRANS (CLAMP_INIT_READY, init_start_round, CLAMP_GOING_IDLE)
+FSM_TRANS (CLAMP_INIT_READY, init_start_round, CLAMP_IDLE)
 {
     pwm_set (BOT_PWM_DOOR_FRONT_BOTTOM, BOT_PWM_DOOR_INIT_START);
     pwm_set (BOT_PWM_DOOR_FRONT_TOP, BOT_PWM_DOOR_INIT_START);
     pwm_set (BOT_PWM_DOOR_BACK_BOTTOM, BOT_PWM_DOOR_INIT_START);
     pwm_set (BOT_PWM_DOOR_BACK_TOP, BOT_PWM_DOOR_INIT_START);
-    clamp_move (logistic_global.clamp_pos_idle);
+    //clamp_move (logistic_global.clamp_pos_idle);
     return FSM_NEXT (CLAMP_INIT_READY, init_start_round);
 }
 

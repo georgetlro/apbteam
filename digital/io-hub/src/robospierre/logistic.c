@@ -449,7 +449,7 @@ logistic_decision (void)
     /* Reset. */
     ctx.moving_from = CLAMP_SLOT_NB;
     ctx.moving_to = CLAMP_SLOT_NB;
-    ctx.construct_possible = 0;
+    ctx.construct_possible = 1;
     ctx.ready = 0;
     ctx.need_prepare = 0;
 
@@ -578,7 +578,12 @@ logistic_drop_element_type (uint8_t direction)
 	    element_type = ctx.slots[i];
 	  }
       }
-    return nb > 1 ? ELEMENT_TOWER : element_type;
+    if (ELEMENT_IS_HEAD (element_type))
+	return ELEMENT_TOWER;
+    else if (nb > 1)
+	return ELEMENT_TOWER;
+    else
+	return ELEMENT_PAWN;
 }
 
 void
