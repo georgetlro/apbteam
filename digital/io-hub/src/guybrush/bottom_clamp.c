@@ -117,6 +117,9 @@ FSM_STATES (
     CLAMP_BOTTOM_CLAMP_BACK,
 
     /*------------------------ Clamp blocked------------------------------. */
+    CLAMP_UPPER_BLOCKED,
+    CLAMP_UPPER_BLOCKED_WAIT,
+    CLAMP_UPPER_BLOCKED_UP,
     CLAMP_BLOCKED,
     CLAMP_OPEN_BOTTOM_CLAMPS,
     CLAMP_TURN_BACKWARD,
@@ -208,6 +211,8 @@ struct clamp_t
 {
     /** Current position. */
     int pos_current;
+    /** Backup position in case of blocking. */
+    int pos_backup;
     /* Clamp_1 is low, which means, it is ready to take a coin*/
     uint8_t clamp_1_down;
     /** True we are stopping the tree approach. */
@@ -379,10 +384,12 @@ FSM_TRANS_TIMEOUT (CLAMP_WAIT_BEFORE_IDLE, TIMEOUT_IDLE,
             /* Hidding the clamp inside the robot. */
             if (ctx.clamp_1_down)
             {
+                ctx.pos_backup = ctx.pos_current;
                 move_needed (HIDE_POS_TREE * 250, FAST_ROTATION);
             }
             else
             {
+                ctx.pos_backup = ctx.pos_current + HALF_TURN * 250;
                 move_needed ((HALF_TURN + HIDE_POS_TREE) * 250, FAST_ROTATION);
                 ctx.clamp_1_down = 1;
             }
@@ -509,10 +516,12 @@ FSM_TRANS (CLAMP_IDLE, tree_detected,CLAMP_BOTTOM_CLAMP_HIDE_POS)
     /*Hidding the clamp inside the robot*/
     if (ctx.clamp_1_down)
     {
-       move_needed(HIDE_POS_TREE * 250,FAST_ROTATION);
+        ctx.pos_backup = ctx.pos_current;
+        move_needed(HIDE_POS_TREE * 250,FAST_ROTATION);
     }
     else
     {
+        ctx.pos_backup = ctx.pos_current + HALF_TURN * 250;
         move_needed((HALF_TURN + HIDE_POS_TREE) * 250,FAST_ROTATION);
         ctx.clamp_1_down = 1;
     }
@@ -531,6 +540,7 @@ FSM_TRANS (CLAMP_BOTTOM_CLAMP_HIDE_POS, lower_clamp_rotation_failure, CLAMP_BLOC
 {
     /*The clamp is blocked somehow.*/
     clamp_blocked();
+    ctx.pos_current = ctx.pos_backup;
     return FSM_NEXT (CLAMP_BOTTOM_CLAMP_HIDE_POS, lower_clamp_rotation_failure);
 }
 
@@ -555,10 +565,11 @@ FSM_TRANS (CLAMP_BOTTOM_CLAMP_READY, lower_clamp_rotation_success, CLAMP_READY_T
 
 }
 
-FSM_TRANS (CLAMP_BOTTOM_CLAMP_READY, lower_clamp_rotation_failure, CLAMP_BLOCKED)
+FSM_TRANS (CLAMP_BOTTOM_CLAMP_READY, lower_clamp_rotation_failure, CLAMP_UPPER_BLOCKED)
 {
     /*The clamp is blocked somehow.*/
     clamp_blocked();
+    ctx.pos_current = ctx.pos_backup;
     return FSM_NEXT (CLAMP_BOTTOM_CLAMP_HIDE_POS, lower_clamp_rotation_failure);
 }
 
@@ -612,9 +623,10 @@ FSM_TRANS (CLAMP_BOTTOM_CLAMP_HIDE_POS2, lower_clamp_rotation_success, CLAMP_REL
 
 }
 
-FSM_TRANS (CLAMP_BOTTOM_CLAMP_HIDE_POS2, lower_clamp_rotation_failure, CLAMP_BLOCKED)
+FSM_TRANS (CLAMP_BOTTOM_CLAMP_HIDE_POS2, lower_clamp_rotation_failure, CLAMP_UPPER_BLOCKED)
 {
     clamp_blocked();
+    ctx.pos_current = ctx.pos_backup;
     return FSM_NEXT (CLAMP_BOTTOM_CLAMP_HIDE_POS2, lower_clamp_rotation_failure);
 
 }
@@ -669,6 +681,7 @@ FSM_TRANS (CLAMP_READY_TO_RECALE, lower_clamp_rotation_success, CLAMP_READY_TO_R
 
 FSM_TRANS (CLAMP_READY_TO_RECALE, lower_clamp_rotation_failure, CLAMP_BLOCKED)
 {
+    ctx.pos_current = ctx.pos_backup;
     return FSM_NEXT (CLAMP_READY_TO_RECALE,lower_clamp_rotation_failure);
 }
 
@@ -689,6 +702,7 @@ FSM_TRANS_TIMEOUT (CLAMP_TEMPO_RECALE, TIMEOUT_OPEN_CLAMPS,CLAMP_END_RECALE)
 
 FSM_TRANS (CLAMP_END_RECALE, lower_clamp_rotation_failure,CLAMP_BLOCKED)
 {
+    ctx.pos_current = ctx.pos_backup;
     return FSM_NEXT (CLAMP_END_RECALE,lower_clamp_rotation_failure);
 }
 
@@ -763,6 +777,31 @@ FSM_TRANS (CLAMP_READY_TO_EMPTY_TREE, stop_tree_approach, CLAMP_REARRANGE_CD)
 /*     Parts of the FSM that takes care of the bottom clamp when it's blocked      */
 /*---------------------------------------------------------------------------------*/
 
+FSM_TRANS_TIMEOUT (CLAMP_UPPER_BLOCKED, TIMEOUT_OPEN_CLAMPS,
+                   CLAMP_UPPER_BLOCKED_WAIT)
+{
+    fsm_queue_post_event (FSM_EVENT (AI, clamp_blocked));
+    IO_CLR (OUTPUT_LOWER_CLAMP_1_CLOSE);
+    IO_CLR (OUTPUT_LOWER_CLAMP_2_CLOSE);
+    return FSM_NEXT_TIMEOUT (CLAMP_BLOCKED);
+}
+
+FSM_TRANS (CLAMP_UPPER_BLOCKED_WAIT, clamp_unblock, CLAMP_UPPER_BLOCKED_UP)
+{
+    IO_SET (OUTPUT_UPPER_CLAMP_UP);
+    IO_CLR (OUTPUT_UPPER_CLAMP_DOWN);
+    IO_SET (OUTPUT_UPPER_CLAMP_OPEN);
+    IO_CLR (OUTPUT_UPPER_CLAMP_IN);
+    IO_SET (OUTPUT_UPPER_CLAMP_OUT);
+    return FSM_NEXT (CLAMP_UPPER_BLOCKED_WAIT, clamp_unblock);
+}
+
+FSM_TRANS_TIMEOUT (CLAMP_UPPER_BLOCKED_UP, 5 * TIMEOUT_OPEN_CLAMPS,
+                   CLAMP_OPEN_BOTTOM_CLAMPS)
+{
+    mimot_move_motor0_absolute (mimot_get_motor0_position() - 16 * 250, MEDIUM_ROTATION);
+    return FSM_NEXT_TIMEOUT (CLAMP_UPPER_BLOCKED_UP);
+}
 
 FSM_TRANS_TIMEOUT (CLAMP_BLOCKED,TIMEOUT_OPEN_CLAMPS,CLAMP_OPEN_BOTTOM_CLAMPS)
 {
