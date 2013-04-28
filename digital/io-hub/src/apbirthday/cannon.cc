@@ -33,11 +33,13 @@ Cannon::Cannon ()
 inline void Cannon::blower_on ()
 {
     // Start the blower
+    robot->pot_regul.set_wiper(0, 256)
 }
 
 inline void Cannon::blower_off ()
 {
     // Shutdown the blower
+    robot->pot_regul.set_wiper (0, 0);
 }
 
 inline void Cannon::set_servo_pos (int pos)
@@ -150,11 +152,13 @@ FSM_START_WITH (CANNON_OFF)
 FSM_TRANS (CANNON_OFF, init_actuators, CANNON_PURGING)
 {
     // Start the blower to purge the canon
+    robot->cannon.blower_on ();
 }
 
 FSM_TRANS_TIMEOUT (CANNON_PURGING, 500, CANNON_READY)
 {
     // Stop the blower
+    robot->cannon.blower_off ();
 }
 
 FSM_TRANS (CANNON_READY, cannon_fire, CANNON_FIRING)
