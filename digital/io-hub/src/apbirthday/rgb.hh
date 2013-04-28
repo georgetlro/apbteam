@@ -25,34 +25,39 @@
 //
 // }}}
 
-#include "ucoolib/arch/arch.hh"
-#include "ucoolib/hal/gpio/gpio.hh"
-#include "ucoolib/hal/usb/usb.hh"
-#include "ucoolib/utils/delay.hh"
-#include "ucoolib/common.hh"
+class RGB
+{
+    public:
+        RGB (ucoo::Gpio *EN_, ucoo::Gpio *S2_, ucoo::Gpio *S3_);
+        ucoo::Gpio *EN;
+        ucoo::Gpio *S2;
+        ucoo::Gpio *S3;
 
-#include <libopencm3/stm32/f4/rcc.h>
-#include <libopencm3/stm32/f4/timer.h>
-#include <libopencm3/cm3/nvic.h>
-#include <libopencm3/cm3/systick.h>
-#include <cstdio>
-
-static enum colors{
-    WHITE = 0,
-    RED = 1,
-    GREEN = 2,
-    BLUE = 3,
-    UNKNOWN = 4
-} color;
-const char * clr[] = { "WHITE", "RED", "GREEN", "BLUE", "UNK"};
-
-static int measure_cnt = 0;
-static int cur_color = WHITE;
-static float results[4] = {0, 0, 0, 0};
-int setup_measure ();
-void tim2_isr(void);
-void sensor_setup(int enable);
-void setup_color(int new_color);
-void setup_input_capture();
+        void start ();
+        int get ();
+        // Ask us if the value is ready or not.
+        bool poke ();
+        enum colors{
+            WHITE = 0,
+            RED = 1,
+            GREEN = 2,
+            BLUE = 3,
+            UNKNOWN = 4,
+            NOT_READY = 5,
+            NB = 6
+        };
+    private:
+        bool value_ready;
+        int min_color, color;
+        float results[4];
+        int cur_color;
+        int measure_cnt;
+        void sensor_setup (int enable);
+        void setup_color (int new_color);
+        void setup_input_capture ();
+        #ifndef TARGET_host
+            void tim2_isr ();
+        #endif
+};
 
 

@@ -158,6 +158,8 @@ class Robot : public ucoo::Proto::Handler
     int stats_cake_, stats_cake_cpt_;
     /// Pressure stats interval and counter.
     int stats_pressure_, stats_pressure_cpt_;
+    /// RGB Sensor
+    int rgb_sensor_;
 };
 
 /// Global instance pointer.

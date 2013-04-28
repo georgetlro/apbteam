@@ -23,17 +23,56 @@
 //
 // }}}
 
-#include "rgb.stm32f4.hh"
 
-void
-setup_input_capture()
+#include "ucoolib/arch/arch.hh"
+#include "ucoolib/hal/gpio/gpio.hh"
+#include "ucoolib/utils/delay.hh"
+#include "ucoolib/common.hh"
+
+#ifndef TARGET_host
+#include <libopencm3/stm32/f4/rcc.h>
+#include <libopencm3/stm32/f4/timer.h>
+#include <libopencm3/cm3/nvic.h>
+#include <libopencm3/cm3/systick.h>
+#endif
+
+#include "rgb.hh"
+
+RGB::RGB (ucoo::Gpio *EN_, ucoo::Gpio *S2_, ucoo::Gpio *S3_)
+{
+    rcc_peripheral_enable_clock (&RCC_AHB1ENR, RCC_AHB1ENR_IOPEEN | RCC_AHB1ENR_IOPDEN);
+    int i;
+
+    EN = EN_;
+    S2 = S2_;
+    S3 = S3_;
+    value_ready = false;
+    for (i = 0; i<4;i++)
+    {
+        results[i] = 0;
+    }
+    measure_cnt = 0;
+    cur_color = WHITE;
+
+    sensor_setup(1);
+    setup_input_capture();
+}
+
+void RGB::sensor_setup(int enable)
+{
+    // enable = 0 => enable the sensor, 1 disable
+    EN->output();
+    EN->set(enable);
+}
+
+void RGB::setup_input_capture()
 {
     // Enable clock for Timer 2.
     rcc_peripheral_enable_clock(&RCC_APB1ENR, RCC_APB1ENR_TIM2EN);
 
     // The button is mapped to TIM2_CH1
-    gpio_mode_setup(GPIOA, GPIO_MODE_AF, GPIO_PUPD_NONE, GPIO5);
-    gpio_set_af(GPIOA, GPIO_AF1, GPIO5);
+    // gpio_mode_setup(GPIOA, GPIO_MODE_AF, GPIO_PUPD_NONE, GPIO5);
+    // gpio_set_af(GPIOA, GPIO_AF1, GPIO5);
 
     // Enable interrupts for TIM2.
     nvic_enable_irq(NVIC_TIM2_IRQ);
@@ -58,57 +97,53 @@ setup_input_capture()
     timer_enable_irq(TIM2, TIM_DIER_CC1IE);
 
     timer_enable_counter(TIM2);
-
 }
 
-void
-setup_color(int new_color)
+void RGB::start ()
 {
-    ucoo::Gpio S2 (GPIOE, 2);
-    ucoo::Gpio S3 (GPIOE, 3);
-    S2.output();
-    S3.output();
+    min_color = 999;
+    color = WHITE;
+    sensor_setup(0);
+}
+
+void RGB::setup_color(int new_color)
+{
+    S2->output();
+    S3->output();
+
     if (new_color == RED)
     {
-        S2.set(0);
-        S3.set(0);
+        S2->set(0);
+        S3->set(0);
     }
     else if (new_color == GREEN)
     {
-        S2.set(1);
-        S3.set(1);
+        S2->set(1);
+        S3->set(1);
     }
     else if (new_color == BLUE)
     {
-        S2.set(0);
-        S3.set(1);
+        S2->set(0);
+        S3->set(1);
     }
     else if (new_color == WHITE)
     {
-        S2.set(1);
-        S3.set(0);
+        S2->set(1);
+        S3->set(0);
     }
 }
 
-// enable = 0 => enable the sensor, 1 disable
-void
-sensor_setup(int enable)
-{
-    ucoo::Gpio EN (GPIOE, 6);
-    EN.output();
-    EN.set(enable);
-}
-
-void
-tim2_isr(void)
+#ifdef TARGET_host
+void RGB::tim2_isr(void)
 {
     static u32 last_value = 0;
     static u32 value = 0;
+
     if (timer_get_flag(TIM2, TIM_SR_CC1IF) != 0) {
         // Interupt received
         timer_clear_flag(TIM2, TIM_SR_CC1IF);
         if (cur_color == UNKNOWN){
-            // Disabling the sensor should stop the inteupt also.
+            // Disabling the sensor should stop the interupt also.
             sensor_setup(1);
         }
         // We want to throw a measure before changing color
@@ -138,39 +173,43 @@ tim2_isr(void)
         {
             // Grab the last results and move on to the next color
             results[cur_color] /= 20;
+
             cur_color++;
             setup_color(cur_color);
             measure_cnt = 0;
         }
     }
 }
+#endif
 
-int
-setup_measure ()
+bool RGB::poke ()
 {
-    int i, color = 0;
-    int min_color = 999;
-    ucoo::Gpio EN (GPIOE, 6);
-
-    sensor_setup(1);
-    setup_input_capture();
-
-    setup_color(WHITE);
-    EN.set(0);
-
-    while (EN.get() == 0);
-
-    for(i = 0; i < 4; i++)
+    int i;
+    if (EN->get() == 0)
     {
-        if (i >= 1 && results[i] < min_color)
+        value_ready = true;
+        for(i = 0; i < 4; i++)
         {
-            color = i;
-            min_color = results[i];
+            if (i >= 1 && results[i] < min_color)
+            {
+                color = i;
+                min_color = results[i];
+            }
+            results[i] = 0;
         }
-        results[i] = 0;
     }
-
-    return color;
+    return value_ready;
 }
 
+int RGB::get ()
+{
+    if (true == value_ready)
+    {
+        return color;
+    }
+    else
+    {
+        return NOT_READY;
+    }
+}
 

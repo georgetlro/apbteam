@@ -328,6 +328,10 @@ Robot::proto_handle (ucoo::Proto &proto, char cmd, const uint8_t *args, int size
         stats_pressure_cpt_ = stats_pressure_ = args[0];
         stats_proto_ = &proto;
         break;
+    case c ('R', 1):
+        // Activate RGB
+        rgb_sensor_ = args[0];
+        break;
     case c ('b', 2):
         // Candles arm manipulation.
         //   - 00: arm events
