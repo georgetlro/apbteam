@@ -28,10 +28,10 @@
 class RGB
 {
     public:
-        RGB (ucoo::Gpio *EN_, ucoo::Gpio *S2_, ucoo::Gpio *S3_);
+        // Need to handle a group of RGB here, each function take an
+        // index to specify which RGB to do stuff on.
+        RGB (ucoo::Gpio *EN_);
         ucoo::Gpio *EN;
-        ucoo::Gpio *S2;
-        ucoo::Gpio *S3;
 
         void start ();
         int get ();
@@ -47,6 +47,8 @@ class RGB
             NB = 6
         };
     private:
+        ucoo::Gpio S2;
+        ucoo::Gpio S3;
         bool value_ready;
         int min_color, color;
         float results[4];
@@ -56,8 +58,6 @@ class RGB
         void setup_color (int new_color);
         void setup_input_capture ();
         #ifndef TARGET_host
-            void tim2_isr ();
+            void tim1_isr ();
         #endif
 };
-
-
