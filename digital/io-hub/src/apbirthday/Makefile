@@ -9,7 +9,7 @@ apbirthday_SOURCES = main.cc robot.cc hardware.host.cc hardware.stm32.cc \
 		     pressure.cc chrono.host.cc chrono.stm32.cc debounce.cc \
 		     radar.cc radar_2013.cc obstacles.cc path.cc path_2013.cc strat.cc \
 		     outputs.cc \
-		     top.cc init.cc move.cc candles.cc cannon.cc drinks.cc plate.cc \
+		     top.cc init.cc move.cc candles.cc rgb.stm32.cc cannon.cc drinks.cc plate.cc \
 		     angfsm.host.c angfsm_gen_arm_AI.arm.c fsm_queue.cc \
 		     $(AVR_SOURCES)
 
