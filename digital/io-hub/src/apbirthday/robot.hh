@@ -33,6 +33,9 @@
 #endif
 #include "fsm_queue.hh"
 #include "chrono.hh"
+#ifdef TARGET_stm32
+# include "rgb.hh"
+#endif
 #include "pressure.hh"
 #include "debounce.hh"
 #include "outputs.hh"
@@ -94,6 +97,10 @@ class Robot : public ucoo::Proto::Handler
     Chrono chrono;
     /// Public access to pressure handling.
     Pressure pressure;
+#ifdef TARGET_stm32
+    /// RGB Sensor
+    RGB rgb;
+#endif
     /// Jack debouncing.
     Debounce jack;
     /// Demo mode flag.
@@ -158,8 +165,6 @@ class Robot : public ucoo::Proto::Handler
     int stats_cake_, stats_cake_cpt_;
     /// Pressure stats interval and counter.
     int stats_pressure_, stats_pressure_cpt_;
-    /// RGB Sensor
-    int rgb_sensor_;
 };
 
 /// Global instance pointer.

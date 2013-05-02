@@ -46,6 +46,9 @@ Robot::Robot ()
       usb_proto (*this, hardware.usb),
       chrono (90000 - 1000),
       pressure (hardware.adc_pressure, hardware.pneum_open, mimot.motor0),
+#ifdef TARGET_stm32
+      rgb (&hardware.cannon_rgb_2),
+#endif
       jack (hardware.raw_jack, 50),
       demo (false),
       usdist_control_ (2),
@@ -328,10 +331,15 @@ Robot::proto_handle (ucoo::Proto &proto, char cmd, const uint8_t *args, int size
         stats_pressure_cpt_ = stats_pressure_ = args[0];
         stats_proto_ = &proto;
         break;
-    case c ('R', 1):
+#ifdef TARGET_stm32
+    case c ('R', 0):
         // Activate RGB
-        rgb_sensor_ = args[0];
+        rgb.start();
+        proto.send ('Z', "X", rgb.get_get());
+        while (!rgb.poke());
+        proto.send ('R', "X", rgb.get ());
         break;
+#endif
     case c ('b', 2):
         // Candles arm manipulation.
         //   - 00: arm events

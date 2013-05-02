@@ -33,7 +33,7 @@ Cannon::Cannon ()
 inline void Cannon::blower_on ()
 {
     // Start the blower
-    robot->pot_regul.set_wiper(0, 256)
+    robot->pot_regul.set_wiper(0, 256);
 }
 
 inline void Cannon::blower_off ()
