@@ -119,6 +119,8 @@ void
 tim2_isr(void)
 {
     static u32 last_value = 0;
+    static u32 counter_time = 0;
+    static u32 time = 0;
     static u32 value = 0;
     ucoo::Gpio led6 (GPIOD, 15);
     char color_out[64];
@@ -137,6 +139,7 @@ tim2_isr(void)
         if (measure_cnt == 0)
         {
             // Leave this measure alone
+            counter_time = timer_get_counter(TIM2);
             results[cur_color] = 0;
             snprintf(color_out, sizeof(color_out), "\n%s => %f", clr[cur_color], results[cur_color] );
             usb_write(usb, color_out);
@@ -150,24 +153,38 @@ tim2_isr(void)
         }
         else if (measure_cnt%2 == 0)
         {
+            // Get TIMER counter
+            //
             // Get a results
             value = (TIM2_CCR1 - last_value);
-            results[cur_color] += value;
+            time = (timer_get_counter(TIM2) - counter_time);
+            if (time < 0)
+                time = time + 0xffff;
+            // if (cur_color == BLUE) {
+                // results[cur_color] += value * 0.8;
+            // }else if (cur_color == RED){
+                // results[cur_color] += value * 1.2;
+            // }else{
+                results[cur_color] += value;
+            // }
             snprintf(color_out, sizeof(color_out), "%s =>  %ld (Total :%f)", clr[cur_color], value, results[cur_color] );
             usb_write(usb, color_out);
-            measure_cnt++;
-        }
-        // Means we have done 3 measure
-        if (measure_cnt == 41)
-        {
-            // Grab the last results and move on to the next color
-            results[cur_color] /= 20;
-            snprintf(color_out, sizeof(color_out), "%s =>  Moy : %f", clr[cur_color], results[cur_color] );
+            snprintf(color_out, sizeof(color_out), "Time is %ld", time);
             usb_write(usb, color_out);
+            // measure_cnt++;
+        // }
+        // Means we have done 3 measure
+        // if (measure_cnt == 41)
+        // {
+            // Grab the last results and move on to the next color
+            // results[cur_color] /= 20;
+            // snprintf(color_out, sizeof(color_out), "%s =>  Moy : %f", clr[cur_color], results[cur_color] );
+            // usb_write(usb, color_out);
 
             cur_color++;
             setup_color(cur_color);
             measure_cnt = 0;
+            counter_time = 0;
         }
     }
 }
@@ -214,6 +231,7 @@ main (int argc, const char **argv)
             snprintf(color_out, sizeof(color_out), "%s is %f\n", clr[i], results[i]);
             usb_write(usb, color_out);
             if (i >= 1 && results[i] < min_color)
+            // if (results[i] < min_color)
             {
                 color = i;
                 min_color = results[i];
