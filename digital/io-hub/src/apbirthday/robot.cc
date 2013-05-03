@@ -139,7 +139,9 @@ Robot::main_loop ()
         top_update ();
         // Handle communications.
         bool sync = main_i2c_queue_.sync ();
+#ifndef TARGET_host
         secondary_i2c_queue_.sync ();
+#endif
         zb_i2c_queue_.sync ();
         Position robot_pos = asserv.get_position ();
         beacon.send_position (robot_pos.v);
