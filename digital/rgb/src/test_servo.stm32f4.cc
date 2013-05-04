@@ -21,10 +21,23 @@
 
 // ~1ms
 // #define SERVO_MIN       (2867)
-// 0.8ms
-// #define SERVO_MIN       (2308)
+// 0.85ms
+#define SERVO_MIN       (2453)
 // 0.6ms
-#define SERVO_MIN       (1732)
+// #define SERVO_MIN       (1732)
+
+void
+setup_timer_oc(u32 timer, enum tim_oc_id timer_oc_ch, u32 gpioport, u16 gpio, u8 alt_func_num)
+{
+    // Second servo on GPIOA2, TIM1_CH1
+    gpio_mode_setup(gpioport, GPIO_MODE_AF, GPIO_PUPD_NONE, gpio);
+    gpio_set_af(gpioport, alt_func_numaf, gpio);
+
+    // Setup timer
+    timer_disable_oc_output(timer, timer_oc_ch);
+    timer_set_oc_mode(timer, timer_oc_ch, TIM_OCM_PWM1);
+    timer_enable_oc_output(timer, timer_oc_ch);
+}
 
 int
 main(int argc, const char **argv)
@@ -49,17 +62,13 @@ main(int argc, const char **argv)
     timer_set_repetition_counter(TIM2, 0);
     timer_continuous_mode(TIM2);
 
-    /* Set timer channel to output */
-    gpio_mode_setup(GPIOA, GPIO_MODE_AF, GPIO_PUPD_NONE, GPIO1);
-    gpio_set_af(GPIOA, GPIO_AF1, GPIO1);
-
-    timer_disable_oc_output(TIM2, TIM_OC2);
-    timer_set_oc_mode(TIM2, TIM_OC2, TIM_OCM_PWM1);
-    timer_enable_oc_output(TIM2, TIM_OC2);
+    setup_timer_oc(TIM2, TIM_OC2, GPIOA, GPIO2, GPIO_AF1);
+    setup_timer_oc(TIM2, TIM_OC3, GPIOA, GPIO2, GPIO_AF1);
 
     timer_enable_counter(TIM2);
 
     timer_set_oc_value(TIM2, TIM_OC2, servo_pos);
+    timer_set_oc_value(TIM2, TIM_OC3, servo_pos);
     ucoo::delay_ms(275);
     while (1)
     {
@@ -71,8 +80,8 @@ main(int argc, const char **argv)
             delay = 275;
         }
         timer_set_oc_value(TIM2, TIM_OC2, servo_pos);
+        timer_set_oc_value(TIM2, TIM_OC2, servo_pos);
         ucoo::delay_ms(delay);
-
     }
     return 0;
 }

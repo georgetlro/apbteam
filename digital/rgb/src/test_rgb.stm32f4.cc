@@ -48,18 +48,20 @@ setup_input_capture()
     rcc_peripheral_enable_clock(&RCC_APB1ENR, RCC_APB1ENR_TIM2EN);
 
     // The button is mapped to TIM2_CH1
+    // When the button is up, there is a high signal; which will be the trigger
+    // to the input capture.
     gpio_mode_setup(GPIOA, GPIO_MODE_AF, GPIO_PUPD_NONE, GPIO5);
     gpio_set_af(GPIOA, GPIO_AF1, GPIO5);
 
     // Enable interrupts for TIM2.
     nvic_enable_irq(NVIC_TIM2_IRQ);
 
-    timer_set_mode(TIM2,
+   timer_set_mode(TIM2,
                    TIM_CR1_CKD_CK_INT, // Internal 72 MHz clock
                    TIM_CR1_CMS_EDGE,   // Edge synchronization
                    TIM_CR1_DIR_UP);    // Upward counter
 
-    timer_set_prescaler(TIM2, 72-1);  // Counter unit = 1 us.
+    timer_set_prescaler(TIM2, 75);
     timer_set_period(TIM2, 0xFFFF);
     timer_set_repetition_counter(TIM2, 0);
     timer_continuous_mode(TIM2);
@@ -68,7 +70,7 @@ setup_input_capture()
     timer_ic_set_input(TIM2, TIM_IC1, TIM_IC_IN_TI1);
     timer_ic_set_filter(TIM2, TIM_IC1, TIM_IC_OFF);
     timer_ic_set_polarity(TIM2, TIM_IC1, TIM_IC_RISING);
-    timer_ic_set_prescaler(TIM2, TIM_IC1, TIM_IC_PSC_OFF);
+    timer_ic_set_prescaler(TIM2, TIM_IC1, TIM_IC_PSC_8);
     timer_ic_enable(TIM2, TIM_IC1);
     timer_clear_flag(TIM2, TIM_SR_CC1IF);
     timer_enable_irq(TIM2, TIM_DIER_CC1IE);
@@ -119,13 +121,10 @@ void
 tim2_isr(void)
 {
     static u32 last_value = 0;
-    static u32 counter_time = 0;
-    static u32 time = 0;
     static u32 value = 0;
-    ucoo::Gpio led6 (GPIOD, 15);
+
     char color_out[64];
     ucoo::UsbStream usb = usb_setup();
-    led6.output();
     if (timer_get_flag(TIM2, TIM_SR_CC1IF) != 0) {
         // Interupt received
         timer_clear_flag(TIM2, TIM_SR_CC1IF);
@@ -139,7 +138,6 @@ tim2_isr(void)
         if (measure_cnt == 0)
         {
             // Leave this measure alone
-            counter_time = timer_get_counter(TIM2);
             results[cur_color] = 0;
             snprintf(color_out, sizeof(color_out), "\n%s => %f", clr[cur_color], results[cur_color] );
             usb_write(usb, color_out);
@@ -156,10 +154,8 @@ tim2_isr(void)
             // Get TIMER counter
             //
             // Get a results
-            value = (TIM2_CCR1 - last_value);
-            time = (timer_get_counter(TIM2) - counter_time);
-            if (time < 0)
-                time = time + 0xffff;
+            if (TIM2_CCR1 > last_value)
+                value = (TIM2_CCR1 - last_value);
             // if (cur_color == BLUE) {
                 // results[cur_color] += value * 0.8;
             // }else if (cur_color == RED){
@@ -168,8 +164,6 @@ tim2_isr(void)
                 results[cur_color] += value;
             // }
             snprintf(color_out, sizeof(color_out), "%s =>  %ld (Total :%f)", clr[cur_color], value, results[cur_color] );
-            usb_write(usb, color_out);
-            snprintf(color_out, sizeof(color_out), "Time is %ld", time);
             usb_write(usb, color_out);
             // measure_cnt++;
         // }
@@ -184,7 +178,6 @@ tim2_isr(void)
             cur_color++;
             setup_color(cur_color);
             measure_cnt = 0;
-            counter_time = 0;
         }
     }
 }
@@ -197,8 +190,10 @@ main (int argc, const char **argv)
 
     ucoo::Gpio button (GPIOA, 0);
     ucoo::Gpio EN (GPIOE, 6);
+
     int i, color = 0;
     int min_color = 999;
+    uint32_t sumup_color = 0;
     char color_out[64];
 
     button.input();
@@ -220,7 +215,7 @@ main (int argc, const char **argv)
 
         usb_write(usb, "START");
         setup_color(WHITE);
-        EN.set(0);
+        sensor_setup(0);
 
         // Wait for the captor to be disabled
         while (EN.get() == 0);
@@ -230,6 +225,7 @@ main (int argc, const char **argv)
         {
             snprintf(color_out, sizeof(color_out), "%s is %f\n", clr[i], results[i]);
             usb_write(usb, color_out);
+            sumup_color += results[i];
             if (i >= 1 && results[i] < min_color)
             // if (results[i] < min_color)
             {
@@ -238,10 +234,13 @@ main (int argc, const char **argv)
             }
             results[i] = 0;
         }
+        sumup_color /= 4;
         snprintf(color_out, sizeof(color_out), "I think the object is %s\n", clr[color]);
         usb_write(usb, color_out);
 
-        // Toggle the led we think is correct for 2s
+        snprintf(color_out, sizeof(color_out), "Sum up color %ld\n", sumup_color);
+        usb_write(usb, color_out);
+
         // RESET the color to check
         cur_color = WHITE;
         min_color = 999;
