@@ -30,6 +30,7 @@ from simu.model.distance_sensor_sensopart import DistanceSensorSensopart
 from simu.model.pneumatic_cylinder import PneumaticCylinder
 from simu.robots.apbirthday.model.cake_arm import CakeArm
 from simu.robots.apbirthday.model.cannon import Cannon
+from simu.robots.apbirthday.model.gifts_arm import GiftsArm
 from math import pi
 import random
 
@@ -86,6 +87,11 @@ class Bag:
                 (Switch (link_bag.cherry_plate_left_contact),
                     Switch (link_bag.cherry_plate_right_contact)),
                 link_bag.io_hub.potentiometer)
+        self.gifts_arm = GiftsArm (table, self.position,
+                PneumaticCylinder (
+                    link_bag.gift_in,
+                    link_bag.gift_out,
+                    scheduler, 0., 1., 10., 10., 0.))
         self.path = link_bag.io_hub.path
         self.pos_report = link_bag.io_hub.pos_report
 

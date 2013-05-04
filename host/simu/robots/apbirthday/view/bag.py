@@ -40,7 +40,7 @@ class Bag:
         self.robot_nb_switch = Switch (sensor_frame,
                 model_bag.robot_nb_switch, 'Nb robots')
         self.robot = Robot (table, model_bag.position, model_bag.cake_arm,
-                model_bag.cannon)
+                model_bag.cannon, model_bag.gifts_arm)
         self.distance_sensor = [DistanceSensorUS (self.robot, ds)
                 for ds in model_bag.distance_sensor]
         self.cake_front = DistanceSensor (self.robot, model_bag.cake_front)

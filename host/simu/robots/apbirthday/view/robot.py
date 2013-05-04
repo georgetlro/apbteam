@@ -24,6 +24,7 @@
 """APBirthday robot view."""
 import simu.inter.drawable
 from simu.view.table_eurobot2013 import PINK, colors
+import math
 
 COLOR_ROBOT = '#000000'
 COLOR_AXES = '#202040'
@@ -31,7 +32,8 @@ COLOR_CANNON = '#808080'
 
 class Robot (simu.inter.drawable.Drawable):
 
-    def __init__ (self, onto, position_model, cake_arm_model, cannon_model):
+    def __init__ (self, onto, position_model, cake_arm_model, cannon_model,
+            gifts_arm_model):
         """Construct and make connections."""
         simu.inter.drawable.Drawable.__init__ (self, onto)
         self.position_model = position_model
@@ -40,6 +42,8 @@ class Robot (simu.inter.drawable.Drawable):
         self.cake_arm_model.register (self.update)
         self.cannon_model = cannon_model
         self.cannon_model.register (self.update)
+        self.gifts_arm_model = gifts_arm_model
+        self.gifts_arm_model.register (self.update)
 
     def __position_notified (self):
         """Called on position modifications."""
@@ -91,6 +95,11 @@ class Robot (simu.inter.drawable.Drawable):
                 fill = '#%02x%02x%02x' % (gray, gray, gray)
                 self.draw_polygon ((x - 20, 140), (x - 20, e), (x + 20, e),
                         (x + 20, 140), fill = fill)
+            # Draw gifts arm.
+            m = self.gifts_arm_model
+            a = math.pi + m.arm_cyl.pos * math.pi / 6
+            self.draw_line ((0, -140), (0 + 108 * math.cos (a),
+                -140 + 108 * math.sin (a)))
             # Extends.
             simu.inter.drawable.Drawable.draw (self)
 

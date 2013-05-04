@@ -38,7 +38,7 @@ class TestSimuControl (TestSimu):
         self.robot_model = self.robots[0].model
         self.io.output (io_hub.apbirthday.output_mask (
             'cake_arm_in', 'cake_push_far_in', 'cake_push_near_in',
-            'cherry_plate_down'), 'toggle')
+            'cherry_plate_down', 'gift_in'), 'toggle')
 
     def create_widgets (self):
         TestSimu.create_widgets (self)
@@ -61,6 +61,7 @@ class TestSimuControl (TestSimu):
         out_button ('Push near in/out', 'cake_push_near_in', 'cake_push_near_out')
         out_button ('Plate arm up/down', 'cherry_plate_up', 'cherry_plate_down')
         out_button ('Plate clamp', 'cherry_plate_clamp')
+        out_button ('Gift', 'gift_in', 'gift_out')
         cannon_var = IntVar ()
         def cannon_cmd ():
             self.io.potentiometer (0, 256 if cannon_var.get () else 0)
