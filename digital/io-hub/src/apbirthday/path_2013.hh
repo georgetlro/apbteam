@@ -33,8 +33,6 @@ class Path_2013 : public Path
   public:
     /** Constructor */
     Path_2013();
-    /** Destructor */
-    ~Path_2013();
     /** (overloaded) Reset path computation, remove mobile obstacles, add static obstacles */
     void reset(void);
 
@@ -48,6 +46,15 @@ class Path_2013 : public Path
     /** Number of additional navigation points. */
     static const int PATH_2013_NAVPOINTS_NB =
         CC_NAVPOINTS_NB + PATH_2013_CAKE_NAVPOINTS_LAYERS * PATH_2013_CAKE_NAVPOINTS_NB;
+
+    /** List of obstacles. */
+    path_obstacle_t obstacles_2013[PATH_2013_OBSTACLES_NB];
+    /** List of navigation points coordonates */
+    vect_t navpoints_2013[PATH_2013_NAVPOINTS_NB];
+    /** List of navigation points weights */
+    weight_t navweights_2013[PATH_2013_NAVPOINTS_NB];
+    /** List of nodes used for A*. */
+    struct astar_node_t astar_nodes_2013[PATH_2013_NAVPOINTS_NB];
 };
 
 #endif // path_2013_hh

@@ -35,18 +35,10 @@ Path_2013::Path_2013() : Path( (pg_border_distance + pg_plate_size_border*2 + BO
                                (pg_length - pg_border_distance))
 {
     host_debug("Path_2013 constructor\n");
-    obstacles = new path_obstacle_t[PATH_2013_OBSTACLES_NB];
-    navpoints = new vect_t[PATH_2013_NAVPOINTS_NB];
-    navweights = new weight_t[PATH_2013_NAVPOINTS_NB];
-    astar_nodes = new struct astar_node_t[PATH_2013_NAVPOINTS_NB];
-}
-
-Path_2013::~Path_2013()
-{
-    delete[] obstacles;
-    delete[] navpoints;
-    delete[] navweights;
-    delete[] astar_nodes;
+    obstacles = obstacles_2013;
+    navpoints = navpoints_2013;
+    navweights = navweights_2013;
+    astar_nodes = astar_nodes_2013;
 }
 
 void Path_2013::reset()
