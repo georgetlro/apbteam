@@ -29,11 +29,12 @@ import math
 COLOR_ROBOT = '#000000'
 COLOR_AXES = '#202040'
 COLOR_CANNON = '#808080'
+COLOR_BALLON = '#ff0000'
 
 class Robot (simu.inter.drawable.Drawable):
 
     def __init__ (self, onto, position_model, cake_arm_model, cannon_model,
-            gifts_arm_model):
+            gifts_arm_model, ballon_model):
         """Construct and make connections."""
         simu.inter.drawable.Drawable.__init__ (self, onto)
         self.position_model = position_model
@@ -44,6 +45,8 @@ class Robot (simu.inter.drawable.Drawable):
         self.cannon_model.register (self.update)
         self.gifts_arm_model = gifts_arm_model
         self.gifts_arm_model.register (self.update)
+        self.ballon_model = ballon_model
+        self.ballon_model.register (self.update)
 
     def __position_notified (self):
         """Called on position modifications."""
@@ -100,6 +103,10 @@ class Robot (simu.inter.drawable.Drawable):
             a = math.pi + m.arm_cyl.pos * math.pi / 6
             self.draw_line ((0, -140), (0 + 108 * math.cos (a),
                 -140 + 108 * math.sin (a)))
+            # Draw ballon.
+            if self.ballon_model.pos > .1:
+                self.draw_circle ((50, -100), self.ballon_model.pos * 75,
+                        fill = COLOR_BALLON)
             # Extends.
             simu.inter.drawable.Drawable.draw (self)
 

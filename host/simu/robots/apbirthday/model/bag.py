@@ -92,6 +92,8 @@ class Bag:
                     link_bag.gift_in,
                     link_bag.gift_out,
                     scheduler, 0., 1., 10., 10., 0.))
+        self.ballon = PneumaticCylinder (None, link_bag.ballon_funny_action,
+                scheduler, 0., 1., .1, .1, 0.)
         self.path = link_bag.io_hub.path
         self.pos_report = link_bag.io_hub.pos_report
 
