@@ -37,15 +37,6 @@ extern "C" {
 #include "modules/utils/utils.h"
 }
 
-/** Enable path finding debug code */
-#define PATH_DEBUG 0
-
-#if PATH_DEBUG
-# define path_debug host_debug
-#else
-# define path_debug(args...) do { } while (0)
-#endif
-
 /** Define path finding plot ID for the python simu framework */
 #define PATH_PLOT_ID    2
 

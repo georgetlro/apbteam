@@ -30,6 +30,14 @@ extern "C" {
 #include "modules/path/astar/astar.h"
 }
 
+/** Enable path finding debug code */
+#define PATH_DEBUG 0
+#if PATH_DEBUG
+# define path_debug host_debug
+#else
+# define path_debug(args...) do { } while (0)
+#endif
+
 /** Static nodes index for the endpoints */
 enum {
     CC_NAVPOINT_SRC_IDX = 0,

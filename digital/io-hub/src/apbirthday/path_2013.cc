@@ -25,16 +25,13 @@
 
 #include "path_2013.hh"
 #include "bot.hh"
-#ifdef HOST
-#include "debug.host.hh"
-#endif
 
 Path_2013::Path_2013() : Path( (pg_border_distance + pg_plate_size_border*2 + BOT_SIZE_RADIUS/2),
                                (pg_border_distance),
                                (pg_width - pg_border_distance - pg_plate_size_border*2 - BOT_SIZE_RADIUS/2),
                                (pg_length - pg_border_distance))
 {
-    host_debug("Path_2013 constructor\n");
+    path_debug("Path_2013 constructor\n");
     obstacles = obstacles_2013;
     navpoints = navpoints_2013;
     navweights = navweights_2013;
