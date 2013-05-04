@@ -51,7 +51,7 @@ Robot::Robot ()
       dev_proto (*this, hardware.dev_uart),
       zb_proto (*this, hardware.zb_uart),
       usb_proto (*this, hardware.usb),
-      chrono (90000 - 1000),
+      chrono (90000),
       pressure (hardware.adc_pressure, hardware.pneum_open, mimot.motor0),
       jack (hardware.raw_jack, 50),
       demo (false),
@@ -127,35 +127,59 @@ Robot::Robot ()
 void
 Robot::main_loop ()
 {
+    bool ended = false;
+    bool stop_done = false, funny_done = false;
     while (1)
     {
         // Wait until next cycle.
         hardware.wait ();
+        // Check chrono, do funny action.
+        if (!ended && chrono.remaining_time_ms () < 1000)
+        {
+            ended = true;
+            hardware.ballon_funny_action.set ();
+            asserv.stop ();
+        }
+        else if (ended && !stop_done && chrono.remaining_time_ms () < 0)
+        {
+            stop_done = true;
+            asserv.free ();
+            pot_regul.set_wiper (0, 0);
+        }
+        else if (ended && !funny_done && chrono.remaining_time_ms () < -10000)
+        {
+            funny_done = true;
+            pressure.set (0);
+        }
         // Update IO modules.
         obstacles.update ();
         pressure.update ();
         jack.update ();
         outputs_set_.update ();
-        top_update ();
+        if (!ended)
+            top_update ();
         // Handle communications.
         bool sync = main_i2c_queue_.sync ();
 #ifndef TARGET_host
         secondary_i2c_queue_.sync ();
 #endif
         zb_i2c_queue_.sync ();
-        Position robot_pos = asserv.get_position ();
-        beacon.send_position (robot_pos.v);
-        // Look for obstacles.
-        if (usdist_control_.update ())
+        if (!ended)
         {
-            radar_.update (robot_pos, obstacles);
-        }
-        // Handle events if synchronised.
-        if (sync && fsm_debug_state_ != FSM_DEBUG_STOP)
-        {
-            if (fsm_gen_event ()
-                && fsm_debug_state_ == FSM_DEBUG_STEP)
-                fsm_debug_state_ = FSM_DEBUG_STOP;
+            Position robot_pos = asserv.get_position ();
+            beacon.send_position (robot_pos.v);
+            // Look for obstacles.
+            if (usdist_control_.update ())
+            {
+                radar_.update (robot_pos, obstacles);
+            }
+            // Handle events if synchronised.
+            if (sync && fsm_debug_state_ != FSM_DEBUG_STOP)
+            {
+                if (fsm_gen_event ()
+                    && fsm_debug_state_ == FSM_DEBUG_STEP)
+                    fsm_debug_state_ = FSM_DEBUG_STOP;
+            }
         }
         // Handle commands.
         dev_proto.accept ();
