@@ -25,6 +25,7 @@
 // }}}
 #include "defs.hh"
 #include "playground_2013.hh"
+#include "asserv.hh"
 
 /// High level strategy decision making.
 class Strat
@@ -34,6 +35,7 @@ class Strat
     {
         CANDLES,
         PLATE,
+        GIFTS,
     };
     /// Information on a candle decision.
     struct CandlesDecision
@@ -55,6 +57,16 @@ class Strat
         /// the point is reached, there is no plate.
         vect_t loading_pos;
     };
+    /// Information on a gift decision.
+    struct GiftsDecision
+    {
+        /// Begin of movement position, same as reported by decision method.
+        vect_t begin_pos;
+        /// End of movement position.
+        vect_t end_pos;
+        /// Movement direction.
+        Asserv::DirectionConsign dir;
+    };
   public:
     /// Return new decision and associated position.
     Decision decision (Position &pos);
@@ -63,11 +75,15 @@ class Strat
                            uint16_t robot_angle);
     /// Take a decision related to plate.
     void decision_plate (PlateDecision &decision);
+    /// Take a decision related to gifts.
+    void decision_gifts (GiftsDecision &decision);
     /// Report a failure to apply the previous decision.
     void failure ();
   private:
     /// Last plate decision.
     PlateDecision plate_decision_;
+    /// Last gifts decision.
+    GiftsDecision gifts_decision_;
 };
 
 #endif // strat_hh

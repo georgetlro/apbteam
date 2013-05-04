@@ -43,6 +43,7 @@
 #include "path_2013.hh"
 #include "strat.hh"
 #include "candles.hh"
+#include "gifts.hh"
 #include "drinks.hh"
 #include "plate.hh"
 #include "cannon.hh"
@@ -122,6 +123,8 @@ class Robot : public ucoo::Proto::Handler
     Strat strat;
     /// Candles.
     Candles candles;
+    /// Gifts.
+    Gifts gifts;
     /// Drinks.
     Drinks drinks;
     /// Plate.

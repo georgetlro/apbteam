@@ -50,6 +50,15 @@ Strat::decision (Position &pos)
         plate_decision_.loading_pos = pg_vect (200, 1400 - plate_load);
         pos = pg_position_deg (200, 600 + plate_load, 90);
         return PLATE;
+    case 2:
+        gifts_decision_.begin_pos = (vect_t) { 600, pg_gifts_distance
+            + BOT_SIZE_SIDE };
+        gifts_decision_.end_pos = (vect_t) { 2400, pg_gifts_distance
+            + BOT_SIZE_SIDE };
+        gifts_decision_.dir = Asserv::FORWARD;
+        pos.v = gifts_decision_.begin_pos;
+        pos.a = 0;
+        return GIFTS;
     default:
         pos.v = pg_cake_pos;
         pos.a = 0;
@@ -123,6 +132,12 @@ void
 Strat::decision_plate (PlateDecision &decision)
 {
     decision = plate_decision_;
+}
+
+void
+Strat::decision_gifts (GiftsDecision &decision)
+{
+    decision = gifts_decision_;
 }
 
 void

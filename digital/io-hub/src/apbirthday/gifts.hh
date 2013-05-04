@@ -1,5 +1,5 @@
-#ifndef playground_2013_hh
-#define playground_2013_hh
+#ifndef gifts_hh
+#define gifts_hh
 // io-hub - Modular Input/Output. {{{
 //
 // Copyright (C) 2013 Nicolas Schodet
@@ -23,24 +23,31 @@
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 //
 // }}}
-#include "playground.hh"
+#include "playground_2013.hh"
 
-/// Largest radius of the cake.
-static const int pg_cake_radius = 500;
+/// Keep gift status.
+class Gifts
+{
+  public:
+    /// Constructor.
+    Gifts ()
+    {
+        for (int i = 0; i < nb; i++)
+            open[i] = false;
+    }
+    /// Update gifts positions according to team color.
+    void compute_pos ()
+    {
+        for (int i = 0; i < nb; i++)
+            x[i] = pg_x (600 * (i + 1) - pg_gift_width / 2);
+    }
+  public:
+    /// Number of gifts.
+    static const int nb = 4;
+    /// Are gifts open?
+    bool open[nb];
+    /// Gifts x positions.
+    int x[nb];
+};
 
-/// Cake center X and Y.
-static const vect_t pg_cake_pos = { pg_width / 2, pg_length };
-
-/// Distance from the cake to blow candles.
-static const int pg_cake_distance = 40;
-
-/// Plate width / 2.
-static const int pg_plate_size_border = 170 / 2;
-
-/// Distance from the border to open gifts.
-static const int pg_gifts_distance = 70;
-
-/// Width of a gift.
-static const int pg_gift_width = 176;
-
-#endif // playground_2013_hh
+#endif // gifts_hh
