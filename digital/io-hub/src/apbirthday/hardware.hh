@@ -75,9 +75,9 @@ struct Hardware
         cherry_plate_left_contact, cherry_plate_right_contact,
         cake_arm_out_contact, cake_arm_in_contact;
     ucoo::Gpio
-        cherry_bad_out, cherry_bad_in,
+        cherry_bad_out,
         cherry_plate_up, cherry_plate_down,
-        cherry_plate_clamp,
+        cherry_plate_clamp_close, cherry_plate_clamp_open,
         cake_arm_out, cake_arm_in,
         cake_push_far_out, cake_push_far_in,
         cake_push_near_out, cake_push_near_in,

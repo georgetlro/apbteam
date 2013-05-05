@@ -81,8 +81,9 @@ class Bag:
                     link_bag.cherry_plate_up,
                     link_bag.cherry_plate_down,
                     scheduler, 0., 1., 2.5, 2.5, 1.),
-                PneumaticCylinder (None,
-                    link_bag.cherry_plate_clamp,
+                PneumaticCylinder (
+                    link_bag.cherry_plate_clamp_open,
+                    link_bag.cherry_plate_clamp_close,
                     scheduler, 0., 1., 10., 10., 0.),
                 (Switch (link_bag.cherry_plate_left_contact),
                     Switch (link_bag.cherry_plate_right_contact)),

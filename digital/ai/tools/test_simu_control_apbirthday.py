@@ -60,7 +60,7 @@ class TestSimuControl (TestSimu):
         out_button ('Push far in/out', 'cake_push_far_in', 'cake_push_far_out')
         out_button ('Push near in/out', 'cake_push_near_in', 'cake_push_near_out')
         out_button ('Plate arm up/down', 'cherry_plate_up', 'cherry_plate_down')
-        out_button ('Plate clamp', 'cherry_plate_clamp')
+        out_button ('Plate clamp', 'cherry_plate_clamp_close', 'cherry_plate_clamp_open')
         out_button ('Gift', 'gift_in', 'gift_out')
         cannon_var = IntVar ()
         def cannon_cmd ():

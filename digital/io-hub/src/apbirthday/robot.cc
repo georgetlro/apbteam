@@ -90,10 +90,10 @@ Robot::Robot ()
     ucoo::assert (i == lengthof (inputs_));
     i = 0;
     outputs_[i++] = &hardware.cherry_bad_out;
-    outputs_[i++] = &hardware.cherry_bad_in;
     outputs_[i++] = &hardware.cherry_plate_up;
     outputs_[i++] = &hardware.cherry_plate_down;
-    outputs_[i++] = &hardware.cherry_plate_clamp;
+    outputs_[i++] = &hardware.cherry_plate_clamp_close;
+    outputs_[i++] = &hardware.cherry_plate_clamp_open;
     outputs_[i++] = &hardware.cake_arm_out;
     outputs_[i++] = &hardware.cake_arm_in;
     outputs_[i++] = &hardware.cake_push_far_out;

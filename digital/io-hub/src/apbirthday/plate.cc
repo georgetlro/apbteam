@@ -60,23 +60,14 @@ inline void Plate::arm_up ()
 
 inline void Plate::clamp_open ()
 {
-#ifdef TARGET_host
-    robot->hardware.cherry_plate_clamp.set (false);
-#else
-    robot->hardware.cherry_bad_out.set (false);
-    robot->hardware.cherry_bad_in.set (true);
-#endif
+    robot->hardware.cherry_plate_clamp_close.set (false);
+    robot->hardware.cherry_plate_clamp_open.set (true);
 }
 
 inline void Plate::clamp_close ()
 {
-#ifdef TARGET_host
-    robot->hardware.cherry_plate_clamp.set (true);
-#else
-    robot->hardware.cherry_bad_out.set (true);
-    robot->hardware.cherry_bad_in.set (false);
-#endif
-
+    robot->hardware.cherry_plate_clamp_close.set (true);
+    robot->hardware.cherry_plate_clamp_open.set (false);
 }
 
 FSM_STATES (PLATE_OFF,
