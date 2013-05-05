@@ -33,6 +33,7 @@
 #else
 # include "ucoolib/arch/host/host_stream.hh"
 #endif
+#include "servo.hh"
 #ifdef TARGET_host
 # include "simu_report.host.hh"
 #endif
@@ -101,6 +102,7 @@ struct Hardware
     ucoo::AdcHost adc_cake_front, adc_cake_back;
     ucoo::AdcHost adc_pressure;
 #endif
+    Servo servos;
 #ifdef TARGET_host
     SimuReport simu_report;
 #endif

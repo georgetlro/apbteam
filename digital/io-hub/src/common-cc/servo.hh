@@ -1,6 +1,5 @@
-#ifndef cannon_hh
-#define cannon_hh
-
+#ifndef servo_hh
+#define servo_hh
 // io-hub - Modular Input/Output. {{{
 //
 // Copyright (C) 2013 Maxime Hadjinlian
@@ -25,27 +24,19 @@
 //
 // }}}
 
-class Cannon
+class Servo
 {
     public:
-        Cannon ();
-        enum ServoPos
+        Servo ();
+        void enable ();
+        void set_position (int servo, int pos);
+        enum Servos
         {
-            BLOCK = 2020, // Correspond to 0.7ms
-            POS1 = 5050, // Correspond to 1.75ms for PWM
-            POS2 = 2453 // Correspond to 0.85ms for PWM
+            SERVO_RGB,
+            SERVO_CHERRY
         };
-        enum StateRouter
-        {
-            OPEN,
-            CLOSE
-        };
-        // GPIO manipulation.
-        static void blower_off ();
-        static void blower_on ();
-        static void set_servo_pos (int pos);
-        void set_router_state (int state);
-
+    private:
+        int servo_pos;
 };
 
-#endif // cannon_hh
+#endif // servo_hh

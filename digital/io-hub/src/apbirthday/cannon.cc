@@ -21,6 +21,7 @@
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 //
 // }}}
+
 #include "robot.hh"
 #include "defs.hh"
 #include "cannon.hh"
@@ -28,6 +29,9 @@
 Cannon::Cannon ()
 {
     // Init the cannon and the RGB sensor
+
+    // Init the servos
+    Cannon::set_servo_pos (BLOCK);
 }
 
 inline void Cannon::blower_on ()
@@ -44,7 +48,9 @@ inline void Cannon::blower_off ()
 
 inline void Cannon::set_servo_pos (int pos)
 {
-    // Switch the servo to BLOCK, POS1 or POS2
+    // The servo for the trap, are *BOTH* on TIM8
+    // And they receive the same order.
+    robot->hardware.servos.set_position(Servo::SERVO_CHERRY, pos);
 }
 
 inline void Cannon::set_router_state (int state)
@@ -55,6 +61,7 @@ inline void Cannon::set_router_state (int state)
 // Trap FSM
 FSM_STATES (CANNON_TRAP_OFF,
             CANNON_TRAP_BLOCK,
+            CANNON_TRAP_BLOCK_WAIT,
             CANNON_TRAP_MOVE_1,
             CANNON_TRAP_MOVE_2)
 
@@ -68,17 +75,23 @@ FSM_TRANS (CANNON_TRAP_OFF, init_actuators, CANNON_TRAP_BLOCK)
     Cannon::set_servo_pos (Cannon::BLOCK);
 }
 
-FSM_TRANS (CANNON_TRAP_BLOCK, cannon_fire, CANNON_TRAP_MOVE_1)
+FSM_TRANS (CANNON_TRAP_BLOCK, cannon_fire, CANNON_TRAP_BLOCK_WAIT)
 {
-    Cannon::set_servo_pos (Cannon::POS1);
+    // Do nothing, stay in block position.
 }
 
-FSM_TRANS_TIMEOUT (CANNON_TRAP_MOVE_1, 75, CANNON_TRAP_MOVE_2)
+FSM_TRANS_TIMEOUT (CANNON_TRAP_BLOCK_WAIT, 50, CANNON_TRAP_MOVE_1)
+{
+    // Stay in block position for 200ms
+    // This is done to give time to the blower to reach its nominal speed.
+}
+
+FSM_TRANS_TIMEOUT (CANNON_TRAP_MOVE_1, 70, CANNON_TRAP_MOVE_2)
 {
     Cannon::set_servo_pos (Cannon::POS2);
 }
 
-FSM_TRANS_TIMEOUT (CANNON_TRAP_MOVE_2, 75, CANNON_TRAP_MOVE_1)
+FSM_TRANS_TIMEOUT (CANNON_TRAP_MOVE_2, 70, CANNON_TRAP_MOVE_1)
 {
     Cannon::set_servo_pos (Cannon::POS1);
 }
@@ -175,5 +188,4 @@ FSM_TRANS_TIMEOUT (CANNON_FIRING, 1250, CANNON_READY)
     // Stop the RGB sensor
     robot->fsm_queue.post (FSM_EVENT (cannon_fire_ok));
 }
-
 

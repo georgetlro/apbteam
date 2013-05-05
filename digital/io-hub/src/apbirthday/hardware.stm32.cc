@@ -36,6 +36,7 @@ Hardware::Hardware ()
       usb_control ("APBTeam", "APBirthday"), usb (usb_control, 0),
       zb_usb_avrisp (usb_control, 1),
       main_i2c (2), secondary_i2c (0), zb_i2c (1),
+      servos (),
       raw_jack (GPIOD, 12),
       ihm_color (GPIOD, 14),
       ihm_strat (GPIOD, 13),
@@ -105,6 +106,8 @@ Hardware::Hardware ()
                              GPIO10 | GPIO11);
     gpio_set_af (GPIOB, GPIO_AF4, GPIO10 | GPIO11);
     zb_i2c.enable ();
+    // Servos
+    servos.enable ();
     // GPIO.
     raw_jack.pull (ucoo::Gpio::PULL_UP);
     ihm_color.pull (ucoo::Gpio::PULL_UP);
