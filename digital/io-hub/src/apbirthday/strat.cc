@@ -39,16 +39,16 @@ Strat::decision (Position &pos)
     case 0:
         plate_decision_.drop = false;
         plate_decision_.approaching_pos =
-            pg_position_deg (200, 600 + plate_app, 90);
-        plate_decision_.loading_pos = pg_vect (200, 600 + plate_load);
+            pg_position_deg (200 - 35, 600 + plate_app, 90);
+        plate_decision_.loading_pos = pg_vect (200 - 35, 600 + plate_load);
         pos = plate_decision_.approaching_pos;
         return PLATE;
     case 1:
         plate_decision_.drop = true;
         plate_decision_.approaching_pos =
-            pg_position_deg (200, 1400 - plate_app, -90);
-        plate_decision_.loading_pos = pg_vect (200, 1400 - plate_load);
-        pos = pg_position_deg (200, 600 + plate_load, 90);
+            pg_position_deg (200 + 35, 1400 - plate_app, -90);
+        plate_decision_.loading_pos = pg_vect (200 + 35, 1400 - plate_load);
+        pos = pg_position_deg (200 - 35, 600 + plate_load, 90);
         return PLATE;
     case 3:
         gifts_decision_.go_first = true;
