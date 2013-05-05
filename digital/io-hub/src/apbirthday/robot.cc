@@ -245,14 +245,14 @@ Robot::proto_handle (ucoo::Proto &proto, char cmd, const uint8_t *args, int size
         }
         break;
       case c ('f', 2):
-	// Set low pressure threshold.
-	// 1w: sensor value, 4096 is full scale.
-	pressure.set (ucoo::bytes_pack (args[0], args[1]));
-	break;
+        // Set low pressure threshold.
+        // 1w: sensor value, 4096 is full scale.
+        pressure.set (ucoo::bytes_pack (args[0], args[1]));
+        break;
       case c ('o', 5):
-	// Set/clear/toggle outputs.
-	// - 1d: mask.
-	// - 1b: 00 to clear, 01 to set, 02 to toggle.
+        // Set/clear/toggle outputs.
+        // - 1d: mask.
+        // - 1b: 00 to clear, 01 to set, 02 to toggle.
         {
             uint32_t mask =
                 ucoo::bytes_pack (args[0], args[1], args[2], args[3]);
@@ -264,19 +264,19 @@ Robot::proto_handle (ucoo::Proto &proto, char cmd, const uint8_t *args, int size
                 return;
             }
         }
-	break;
+        break;
       case c ('o', 6):
-	// Toggle outputs for a short time.
-	// - 1d: mask.
-	// - 1w: duration.
+        // Toggle outputs for a short time.
+        // - 1d: mask.
+        // - 1w: duration.
         {
             uint32_t mask =
                 ucoo::bytes_pack (args[0], args[1], args[2], args[3]);
             outputs_set_.command (Outputs::TOGGLE, mask);
             outputs_set_.command_later (Outputs::TOGGLE, mask,
-                                        ucoo::bytes_pack (args[4], args[5]));
+                    ucoo::bytes_pack (args[4], args[5]));
         }
-	break;
+        break;
     case c ('p', 4):
         // Set potentiometer wiper.
         // - 1b: wiper index.
