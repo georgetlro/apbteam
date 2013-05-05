@@ -1,33 +1,14 @@
-// rgb - Drives a sensors on an STM32F4 card. {{{
-//
-//
-// Copyright (C) 2013 Maxime Hadjinlian
-//
-// APBTeam:
-//        Web: http://apbteam.org/
-//      Email: team AT apbteam DOT org
-//
-// This program is free software; you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation; either version 2 of the License, or
-// (at your option) any later version.
-//
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License
-// along with this program; if not, write to the Free Software
-// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-//
-// }}}
 #include "rgb.stm32f4.hh"
+
+#define BASIC_GREY 190
+
+static int measure_cnt = 0;
+static int cur_color = WHITE;
+static float results[4] = {0, 0, 0, 0};
 
 ucoo::UsbStream usb_setup(){
     static ucoo::UsbStreamControl usc ("APBTeam", "USB test");
     static ucoo::UsbStream u = ucoo::UsbStream (usc, 0);
-    // Don't block when writing
     u.block(false);
     return u;
 }
@@ -47,14 +28,10 @@ setup_input_capture()
     // Enable clock for Timer 2.
     rcc_peripheral_enable_clock(&RCC_APB1ENR, RCC_APB1ENR_TIM2EN);
 
-    // The button is mapped to TIM2_CH1
-    // When the button is up, there is a high signal; which will be the trigger
-    // to the input capture.
-    gpio_mode_setup(GPIOA, GPIO_MODE_AF, GPIO_PUPD_NONE, GPIO5);
+        gpio_mode_setup(GPIOA, GPIO_MODE_AF, GPIO_PUPD_NONE, GPIO5);
     gpio_set_af(GPIOA, GPIO_AF1, GPIO5);
 
-    // Enable interrupts for TIM2.
-    nvic_enable_irq(NVIC_TIM2_IRQ);
+        nvic_enable_irq(NVIC_TIM2_IRQ);
 
    timer_set_mode(TIM2,
                    TIM_CR1_CKD_CK_INT, // Internal 72 MHz clock
@@ -70,7 +47,8 @@ setup_input_capture()
     timer_ic_set_input(TIM2, TIM_IC1, TIM_IC_IN_TI1);
     timer_ic_set_filter(TIM2, TIM_IC1, TIM_IC_OFF);
     timer_ic_set_polarity(TIM2, TIM_IC1, TIM_IC_RISING);
-    timer_ic_set_prescaler(TIM2, TIM_IC1, TIM_IC_PSC_8);
+    // timer_ic_set_prescaler(TIM2, TIM_IC1, TIM_IC_PSC_8);
+    timer_ic_set_prescaler(TIM2, TIM_IC1, TIM_IC_PSC_OFF);
     timer_ic_enable(TIM2, TIM_IC1);
     timer_clear_flag(TIM2, TIM_SR_CC1IF);
     timer_enable_irq(TIM2, TIM_DIER_CC1IE);
@@ -117,66 +95,42 @@ sensor_setup(int enable)
     EN.set(enable);
 }
 
+static u32 last_value = 0;
 void
 tim2_isr(void)
 {
-    static u32 last_value = 0;
     static u32 value = 0;
-
     char color_out[64];
-    ucoo::UsbStream usb = usb_setup();
+    cur_color = WHITE;
     if (timer_get_flag(TIM2, TIM_SR_CC1IF) != 0) {
-        // Interupt received
         timer_clear_flag(TIM2, TIM_SR_CC1IF);
-        if (cur_color == UNKNOWN){
-            // Disabling the sensor should stop the inteupt also.
-            sensor_setup(1);
-        }
-        // We want to throw a measure before changing color
-        // since we do a "loop" of all the colors, we skip one out of two
-        // measures.
         if (measure_cnt == 0)
         {
-            // Leave this measure alone
             results[cur_color] = 0;
-            snprintf(color_out, sizeof(color_out), "\n%s => %f", clr[cur_color], results[cur_color] );
-            usb_write(usb, color_out);
             measure_cnt++;
         }
-        else if (measure_cnt%2 == 1)
+        else if (measure_cnt == 1)
         {
-            // First measure that counts.
             last_value = TIM2_CCR1;
             measure_cnt++;
         }
-        else if (measure_cnt%2 == 0)
+        else if (measure_cnt == 2)
         {
-            // Get TIMER counter
-            //
-            // Get a results
             if (TIM2_CCR1 > last_value)
-                value = (TIM2_CCR1 - last_value);
-            // if (cur_color == BLUE) {
-                // results[cur_color] += value * 0.8;
-            // }else if (cur_color == RED){
-                // results[cur_color] += value * 1.2;
-            // }else{
-                results[cur_color] += value;
+            {
+                results[cur_color] = (TIM2_CCR1 - last_value);
+            }
+            else
+            {
+                results[cur_color] = (65535 - last_value) + TIM2_CCR1;
+            }
+            // cur_color++;
+            // if (cur_color == UNKNOWN)
+            // {
+                // cur_color = WHITE;
+                sensor_setup(1);
             // }
-            snprintf(color_out, sizeof(color_out), "%s =>  %ld (Total :%f)", clr[cur_color], value, results[cur_color] );
-            usb_write(usb, color_out);
-            // measure_cnt++;
-        // }
-        // Means we have done 3 measure
-        // if (measure_cnt == 41)
-        // {
-            // Grab the last results and move on to the next color
-            // results[cur_color] /= 20;
-            // snprintf(color_out, sizeof(color_out), "%s =>  Moy : %f", clr[cur_color], results[cur_color] );
-            // usb_write(usb, color_out);
-
-            cur_color++;
-            setup_color(cur_color);
+            // setup_color(cur_color);
             measure_cnt = 0;
         }
     }
@@ -191,63 +145,85 @@ main (int argc, const char **argv)
     ucoo::Gpio button (GPIOA, 0);
     ucoo::Gpio EN (GPIOE, 6);
 
-    int i, color = 0;
+    int i = 0, color = 0;
     int min_color = 999;
     uint32_t sumup_color = 0;
+    uint32_t offset = 0;
+    int nb_cherry = 0;
     char color_out[64];
 
     button.input();
 
     ucoo::UsbStream usb = usb_setup();
 
+    sensor_setup(1);
+    setup_input_capture();
+    // setup_color(WHITE);
+    setup_color(BLUE);
+    // setup_color(RED);
+
+    ucoo::Gpio led3 (GPIOD, 13);
+    led3.output();
+    led3.reset();
+
+    // Grab a first measure to compute the offet from the "normal" grey
+    sensor_setup(0);
+    while (EN.get() == 0);
+    offset = BASIC_GREY - results[0];
+
     while(1){
-        sensor_setup(1);
-        setup_input_capture();
 
-        usb_write(usb, "READY");
-
-        // Wait for button to be pushed
-        while (!button.get());
-        // Wait for button to be released
-        while (button.get());
-
-        usb_write(usb, "WAIT");
-
-        usb_write(usb, "START");
-        setup_color(WHITE);
         sensor_setup(0);
-
-        // Wait for the captor to be disabled
         while (EN.get() == 0);
-        usb_write(usb, "DONE");
 
-        for(i = 0; i < 4; i++)
+        // snprintf(color_out, sizeof(color_out), "%f", results[0]);
+        // usb_write(usb, color_out);
+        color = results[0] + offset;
+
+        if (color > 120 && color < 165)
         {
-            snprintf(color_out, sizeof(color_out), "%s is %f\n", clr[i], results[i]);
+            // usb.write("W", 1);
+            ++nb_cherry;
+            snprintf(color_out, sizeof(color_out), "C-%f-%d", results[0], nb_cherry);
             usb_write(usb, color_out);
-            sumup_color += results[i];
-            if (i >= 1 && results[i] < min_color)
-            // if (results[i] < min_color)
-            {
-                color = i;
-                min_color = results[i];
-            }
-            results[i] = 0;
         }
-        sumup_color /= 4;
-        snprintf(color_out, sizeof(color_out), "I think the object is %s\n", clr[color]);
-        usb_write(usb, color_out);
+        else if (color > 40 && color < 100)
+        {
+            // usb.write("W", 1);
+            ++nb_cherry;
+            snprintf(color_out, sizeof(color_out), "W-%f-%d", results[0], nb_cherry);
+            usb_write(usb, color_out);
+        }
+        else
+        {
+            ucoo::delay_ms(1);
+        }
 
-        snprintf(color_out, sizeof(color_out), "Sum up color %ld\n", sumup_color);
-        usb_write(usb, color_out);
+        // if (results[0] < 600)
+        // {
+        //     // usb.write("W", 1);
+        //     snprintf(color_out, sizeof(color_out), "W-%f", results[0]);
+        //     usb_write(usb, color_out);
+        // }
+        // else if (results[0] > 1200)
+        // {
+        //     // usb.write("N", 1);
+        //     ucoo::delay_ms(1);
+        // }
+        // else
+        // {
+        //     // usb.write("C", 1);
+        //     snprintf(color_out, sizeof(color_out), "C-%f", results[0]);
+        //     usb_write(usb, color_out);
+        // }
 
-        // RESET the color to check
-        cur_color = WHITE;
-        min_color = 999;
-        color = 0;
-
-        usb_write(usb, "END");
-
+        i++;
+        if ( i >= 50)
+        {
+            led3.toggle();
+            i = 0;
+        }
+        ucoo::delay_ms(3);
     }
 
     return 0;

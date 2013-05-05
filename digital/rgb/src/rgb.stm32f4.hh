@@ -19,9 +19,6 @@ static enum colors{
 } color;
 const char * clr[] = { "WHITE", "RED", "GREEN", "BLUE", "UNK"};
 
-static int measure_cnt = 0;
-static int cur_color = WHITE;
-static float results[4] = {0, 0, 0, 0};
 int setup_measure ();
 void tim2_isr(void);
 void sensor_setup(int enable);
