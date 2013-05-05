@@ -56,6 +56,7 @@ class InterAPBirthday (Frame):
         # Outputs.
         output_frame = Frame (self)
         output_frame.pack (side = LEFT, fill = Y)
+        row = 0
         def make_setreset (index):
             def setreset ():
                 val = self.output_var[index].get ()
@@ -63,13 +64,18 @@ class InterAPBirthday (Frame):
             return setreset
         def make_toggle (*index):
             def toggle ():
+                transient = transient_scale.get ()
                 mask = 0
                 for i in index:
-                    var = self.output_var[i]
-                    val = 1 - var.get ()
-                    var.set (val)
+                    if not transient:
+                        var = self.output_var[i]
+                        val = 1 - var.get ()
+                        var.set (val)
                     mask |= 1 << i
-                self.io.output (mask, 'toggle')
+                if transient:
+                    self.io.output_transient (mask, transient)
+                else:
+                    self.io.output (mask, 'toggle')
             return toggle
         def common (a, b):
             if a is None or b is None: return None
@@ -91,14 +97,19 @@ class InterAPBirthday (Frame):
             button = Checkbutton (output_frame, indicatoron = 0,
                     text = '%d: %s' % (i, name), command = make_setreset (i),
                     variable = var)
-            button.grid (column = 0, row = i, sticky = 'nsew')
+            button.grid (column = 0, row = row, sticky = 'nsew')
             c = common (name, previous)
             if c:
                 button = Button (output_frame, text = c, command =
                         make_toggle (i - 1, i))
-                button.grid (column = 1, row = i - 1, rowspan = 2,
+                button.grid (column = 1, row = row - 1, rowspan = 2,
                         sticky = 'nsew')
             previous = name
+            row += 1
+        transient_scale = Scale (output_frame, from_ = 0, to = 250,
+                label = 'Transient', orient = HORIZONTAL)
+        transient_scale.grid (column = 1, row = row)
+        row += 1
         # Misc.
         misc_frame = Frame (self)
         misc_frame.pack (side = LEFT, fill = Y)
