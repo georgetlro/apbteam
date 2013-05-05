@@ -57,8 +57,13 @@
 #define BOT_SPEED_NORMAL 0x50, 0x60, 0x20, 0x20
 /// Speed used for plate loading.
 #define BOT_SPEED_PLATE 0x20, 0x20, 0x20, 0x20
+/// Speed used for gifts.
+#define BOT_SPEED_GIFTS 0x28, 0x30, 0x20, 0x20
 
 /// Normal pneumatic pressure.
 #define BOT_NORMAL_PRESSURE 0x0c00
+
+/// X position of the gift arm when extended.
+static const int bot_gift_arm_x = -100;
 
 #endif // bot_hh

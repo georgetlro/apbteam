@@ -60,7 +60,9 @@ class Strat
     /// Information on a gift decision.
     struct GiftsDecision
     {
-        /// Begin of movement position, same as reported by decision method.
+        /// Need to go to begin_pos first.
+        bool go_first;
+        /// Begin of movement position, only used if go_first.
         vect_t begin_pos;
         /// End of movement position.
         vect_t end_pos;

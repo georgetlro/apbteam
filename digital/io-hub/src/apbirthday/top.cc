@@ -249,10 +249,11 @@ top_fsm_gen_event ()
     if (ANGFSM_CAN_HANDLE (AI, top_gifts_open))
     {
         Position pos = robot->asserv.get_position ();
+        int arm_x = pos.v.x + bot_gift_arm_x;
         for (int i = 0; i < Gifts::nb; i++)
         {
             if (!robot->gifts.open[i]
-                && std::abs (pos.v.x - robot->gifts.x[i]) < 25)
+                && std::abs (arm_x - robot->gifts.x[i]) < pg_gift_width / 2)
             {
                 if (ANGFSM_HANDLE (AI, top_gifts_open))
                 {
@@ -308,6 +309,8 @@ ANGFSM_STATES (
             TOP_PLATE_DROPING,
             // Gifts: go to gifts.
             TOP_GIFTS_GOTO,
+            // Gifts: go to first gift.
+            TOP_GIFTS_GOTO_FIRST,
             // Gifts: going along the wall, opening gifts.
             TOP_GIFTS_OPEN,
             // Demo mode: push the wall near the cake.
@@ -535,13 +538,38 @@ FSM_TRANS (TOP_PLATE_LOADING, plate_taken, TOP_DECISION)
 /// Gifts mode.
 ///
 
-FSM_TRANS (TOP_GIFTS_GOTO, move_success, TOP_GIFTS_OPEN)
+FSM_TRANS (TOP_GIFTS_GOTO, move_success,
+           go_first, TOP_GIFTS_GOTO_FIRST,
+           open, TOP_GIFTS_OPEN)
 {
-    robot->move.start (top.gifts.end_pos, top.gifts.dir);
+    if (top.gifts.go_first)
+    {
+        robot->move.start (top.gifts.begin_pos, Asserv::REVERT_OK);
+        return FSM_BRANCH (go_first);
+    }
+    else
+    {
+        robot->asserv.set_speed (BOT_SPEED_GIFTS);
+        robot->move.start (top.gifts.end_pos, top.gifts.dir);
+        return FSM_BRANCH (open);
+    }
 }
 
 FSM_TRANS (TOP_GIFTS_GOTO, move_failure, TOP_DECISION)
 {
+}
+
+FSM_TRANS (TOP_GIFTS_GOTO_FIRST, move_success, TOP_GIFTS_OPEN)
+{
+    robot->asserv.set_speed (BOT_SPEED_GIFTS);
+    robot->move.start (top.gifts.end_pos, top.gifts.dir);
+}
+
+FSM_TRANS (TOP_GIFTS_GOTO_FIRST, move_failure, TOP_GIFTS_OPEN)
+{
+    // Continue anyway.
+    robot->asserv.set_speed (BOT_SPEED_GIFTS);
+    robot->move.start (top.gifts.end_pos, top.gifts.dir);
 }
 
 FSM_TRANS (TOP_GIFTS_OPEN, move_success, TOP_DECISION)
@@ -557,7 +585,7 @@ FSM_TRANS (TOP_GIFTS_OPEN, top_gifts_open, TOP_GIFTS_OPEN)
     robot->hardware.gift_out.set ();
     robot->hardware.gift_in.reset ();
     // This is the delay to keep the arm out.
-    top.gifts_opening = 75;
+    top.gifts_opening = 250 / 4;
 }
 
 ///

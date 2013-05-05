@@ -38,7 +38,7 @@ static const int pg_cake_distance = 40;
 static const int pg_plate_size_border = 170 / 2;
 
 /// Distance from the border to open gifts.
-static const int pg_gifts_distance = 70;
+static const int pg_gifts_distance = 80;
 
 /// Width of a gift.
 static const int pg_gift_width = 176;
