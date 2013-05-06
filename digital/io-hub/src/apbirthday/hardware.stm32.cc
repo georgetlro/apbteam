@@ -36,7 +36,6 @@ Hardware::Hardware ()
       usb_control ("APBTeam", "APBirthday"), usb (usb_control, 0),
       zb_usb_avrisp (usb_control, 1),
       main_i2c (2), secondary_i2c (0), zb_i2c (1),
-      servos (),
       raw_jack (GPIOD, 12),
       ihm_color (GPIOD, 14),
       ihm_strat (GPIOD, 13),
@@ -65,7 +64,8 @@ Hardware::Hardware ()
       adc_dist0 (adc, 0), adc_dist1 (adc, 1),
       adc_dist2 (adc, 2), adc_dist3 (adc, 3),
       adc_cake_front (adc, 6), adc_cake_back (adc, 7),
-      adc_pressure (adc, 8)
+      adc_pressure (adc, 8),
+      servos ()
 {
     rcc_peripheral_enable_clock (&RCC_AHB1ENR, RCC_AHB1ENR_IOPAEN);
     rcc_peripheral_enable_clock (&RCC_AHB1ENR, RCC_AHB1ENR_IOPBEN);
