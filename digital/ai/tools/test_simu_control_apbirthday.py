@@ -38,7 +38,8 @@ class TestSimuControl (TestSimu):
         self.robot_model = self.robots[0].model
         self.io.output (io_hub.apbirthday.output_mask (
             'cake_arm_in', 'cake_push_far_in', 'cake_push_near_in',
-            'cherry_plate_down', 'gift_in'), 'toggle')
+            'cherry_plate_down', 'cherry_plate_clamp_open', 'gift_in'),
+            'toggle')
 
     def create_widgets (self):
         TestSimu.create_widgets (self)
