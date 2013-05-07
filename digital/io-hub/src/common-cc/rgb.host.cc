@@ -52,7 +52,7 @@ Rgb::get_color (int offset)
     }
     else
     {
-        return get_cherry_color ();
+        return get_cake_color ();
     }
     return 0;
 }
@@ -79,7 +79,7 @@ Rgb::get_cannon_color (int offset)
 }
 
 int
-Rgb::get_cherry_color (void)
+Rgb::get_cake_color (void)
 {
     return UNKNOWN;
 }

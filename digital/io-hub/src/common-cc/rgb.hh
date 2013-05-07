@@ -56,8 +56,8 @@ class Rgb
         enum sensor
         {
             CANNON,
-            CHERRY_FAR,
-            CHERRY_NEAR,
+            CAKE_FAR,
+            CAKE_NEAR,
             NONE
         };
     private:
@@ -80,7 +80,7 @@ class Rgb
         void do_measure (void);
         /* There is different type to grab a color for each RGB */
         int get_cannon_color (int offset);
-        int get_cherry_color (void);
+        int get_cake_color (void);
 };
 
 #endif // rgb_hh

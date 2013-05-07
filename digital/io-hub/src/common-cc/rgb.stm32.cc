@@ -43,10 +43,10 @@ Rgb::Rgb (int sensor_): S2(GPIOE, 8), S3(GPIOE, 11)
     int gpio_en = 15;
     switch (sensor_)
     {
-        case CHERRY_FAR:
+        case CAKE_FAR:
             gpio_en = 10;
             break;
-        case CHERRY_NEAR:
+        case CAKE_NEAR:
             gpio_en = 13;
             break;
     }
@@ -150,7 +150,7 @@ Rgb::get_color (int offset)
     }
     else
     {
-        return get_cherry_color ();
+        return get_cake_color ();
     }
     return 0;
 }
@@ -201,7 +201,7 @@ Rgb::get_cannon_color (int offset)
 }
 
 int
-Rgb::get_cherry_color (void)
+Rgb::get_cake_color (void)
 {
     int min_color = 999, results = NOTHING, color;
     cur_color = WHITE;
