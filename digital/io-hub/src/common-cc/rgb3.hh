@@ -1,5 +1,5 @@
-#ifndef rgb2_hh
-#define rgb2_hh
+#ifndef rgb3_hh
+#define rgb3_hh
 // io-hub - Modular Input/Output. {{{
 //
 // Copyright (C) 2013 Maxime Hadjinlian

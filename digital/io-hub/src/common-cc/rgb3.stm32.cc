@@ -21,7 +21,7 @@
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 //
 // }}}
-#include "rgb2.hh"
+#include "rgb3.hh"
 
 #include <libopencm3/stm32/f4/rcc.h>
 #include <libopencm3/stm32/f4/timer.h>
