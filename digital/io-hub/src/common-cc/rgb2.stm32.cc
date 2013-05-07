@@ -255,6 +255,57 @@ Rgb::get_cherry_color (int sensor)
     return results;
 }
 
+int
+Rgb::rgb_to_hue (int r, int g, int b)
+{
+    uint8_t rgb_min, rgb_max, hue, sat, val;
+
+    // find minimal between r, g and b
+    if (g <= b){
+        if (r <= g){
+            rgb_min = r;
+        }else{
+            rgb_min = g;
+        }
+    }else if (r <= b){
+        rgb_min = r;
+    }else{
+        rgb_min = b;
+    }
+
+    // find maximal between r, g and b
+    if (g >= b){
+        if (r >= g){
+            rgb_max = r;
+        }else{
+            rgb_max = g;
+        }
+    }else if (r >= b){
+        rgb_max = r;
+    }else{
+        rgb_max = b;
+    }
+
+    val = rgb_max;
+    if (val == 0)
+        return 0;
+
+    sat = 255 * (rgb_max - rgb_min) / val;
+    if (sat == 0)
+        return 0;
+
+    /* Compute hue */
+    if (rgb_max == r) {
+        hue = 0 + 43*(g - b)/(rgb_max - rgb_min);
+    } else if (rgb_max == g) {
+        hue = 85 + 43*(b - r)/(rgb_max - rgb_min);
+    } else /* rgb_max == b */ {
+        hue = 171 + 43*(r - g)/(rgb_max - rgb_min);
+    }
+
+    return hue;
+}
+
 void
 Rgb::ic_isr (void)
 {

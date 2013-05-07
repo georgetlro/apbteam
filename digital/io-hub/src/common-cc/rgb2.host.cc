@@ -84,6 +84,11 @@ Rgb::get_cherry_color (int sensor)
     return UNKNOWN;
 }
 
+int
+Rgb::rgb_to_hue (int r, int g, int b){
+    return 0;
+}
+
 void
 Rgb::ic_isr (void)
 {

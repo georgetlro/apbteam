@@ -52,6 +52,7 @@ class Rgb
         /* There is different type to grab a color for each RGB */
         static int get_cannon_color (int offset);
         static int get_cherry_color (int sensor);
+        static int rgb_to_hue (int r, int g, int b);
 
         enum color
         {
