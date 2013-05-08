@@ -65,16 +65,16 @@ class Robot (simu.inter.drawable.Drawable):
             plate = self.cannon_model.plate
             f = self.cannon_model.arm_cyl.pos
             if plate is not None:
-                self.draw_rectangle ((-back - f * 170, 85), (-back, -85),
-                        fill = PINK)
-                self.draw_rectangle ((-back - f * 148, 85 - 22),
-                        (-back - f * 22, -85 + 22), fill = PINK)
+                self.draw_rectangle ((-back - f * 170, 85 - 35),
+                        (-back, -85 - 35), fill = PINK)
+                self.draw_rectangle ((-back - f * 148, 85 - 22 - 35),
+                        (-back - f * 22, -85 + 22 - 35), fill = PINK)
                 for c in plate.cherries:
                     if c.pos:
                         self.draw_circle ((-back - f * (c.pos[0] + 85),
-                            c.pos[1]), c.radius, fill = colors[c.color])
-                self.draw_rectangle ((-back - f * 170, 85),
-                        (-back - f * 170 - (1 - f) * 22, -85), fill = PINK)
+                            c.pos[1] - 35), c.radius, fill = colors[c.color])
+                self.draw_rectangle ((-back - f * 170, 85 - 35),
+                        (-back - f * 170 - (1 - f) * 22, -85 - 35), fill = PINK)
             # Draw robot body.
             self.draw_polygon ((front, side), (front, -side), (-back, -side),
                     (-back, 81), (-50, side), fill = COLOR_ROBOT)

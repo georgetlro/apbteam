@@ -57,7 +57,7 @@ class Cannon (Observable):
         m.translate (self.robot_position.pos)
         m.rotate (self.robot_position.angle)
         x = -back
-        y = (50, -50)
+        y = (50 - 35, -50 - 35)
         for i, c in enumerate (self.contacts):
             s = True
             sensor_pos = m.apply ((x, y[i]))
@@ -112,5 +112,5 @@ class Cannon (Observable):
 
     def __plate_drop_point (self):
         return (vector (self.robot_position.pos)
-                - vector.polar (self.robot_position.angle, 108 + 85))
+                + vector (-back - 85, -35).rotate (self.robot_position.angle))
 
