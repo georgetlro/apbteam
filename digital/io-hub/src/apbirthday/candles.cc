@@ -204,11 +204,8 @@ FSM_STATES (AI_CANDLE_OFF,
             AI_CANDLE_WAITING_PRESSURE,
             AI_CANDLE_INIT,
             AI_CANDLE_SLEEPING,
-            AI_CANDLE_DEPLOYING_SERVO,
             AI_CANDLE_DEPLOYING_ARM,
-            AI_CANDLE_FALLING_BACK_TO_UNDEPLOYED_SERVO,
-            AI_CANDLE_FALLING_BACK_TO_UNDEPLOYED_1,
-            AI_CANDLE_FALLING_BACK_TO_UNDEPLOYED_2,
+            AI_CANDLE_DEPLOYING_SERVO,
             AI_CANDLE_READY,
             AI_CANDLE_UNDEPLOYING_SERVO,
             AI_CANDLE_UNDEPLOYING_1,
@@ -253,7 +250,7 @@ FSM_TRANS_TIMEOUT (AI_CANDLE_DEPLOYING_ARM, 300, AI_CANDLE_DEPLOYING_SERVO)
 
 FSM_TRANS_TIMEOUT (AI_CANDLE_DEPLOYING_SERVO, 300,
                    success, AI_CANDLE_READY,
-                   failure, AI_CANDLE_FALLING_BACK_TO_UNDEPLOYED_SERVO)
+                   failure, AI_CANDLE_UNDEPLOYING_SERVO)
 {
     // TODO: connect contact.
     if (1 || !robot->hardware.cake_arm_out_contact.get ())
@@ -268,22 +265,6 @@ FSM_TRANS_TIMEOUT (AI_CANDLE_DEPLOYING_SERVO, 300,
         robot->fsm_queue.post (FSM_EVENT (ai_candle_failure));
         return FSM_BRANCH (failure);
     }
-}
-
-FSM_TRANS_TIMEOUT (AI_CANDLE_FALLING_BACK_TO_UNDEPLOYED_SERVO, 300,
-                   AI_CANDLE_FALLING_BACK_TO_UNDEPLOYED_1)
-{
-        Candles::undeploy_arm_1 ();
-}
-
-FSM_TRANS_TIMEOUT (AI_CANDLE_FALLING_BACK_TO_UNDEPLOYED_1, 160, AI_CANDLE_FALLING_BACK_TO_UNDEPLOYED_2)
-{
-    Candles::undeploy_arm_2 ();
-}
-
-FSM_TRANS_TIMEOUT (AI_CANDLE_FALLING_BACK_TO_UNDEPLOYED_2, 56, AI_CANDLE_SLEEPING)
-{
-    Candles::undeploy_arm_3 ();
 }
 
 FSM_TRANS (AI_CANDLE_READY, ai_candle_blow, AI_CANDLE_READY)
@@ -361,7 +342,7 @@ FSM_TRANS_TIMEOUT (AI_CANDLE_UNDEPLOYING_2, 42, AI_CANDLE_UNDEPLOYING_3)
 
 FSM_TRANS_TIMEOUT (AI_CANDLE_UNDEPLOYING_3, 100,
                    success, AI_CANDLE_SLEEPING,
-                   failure, AI_CANDLE_FALLING_BACK_TO_UNDEPLOYED_SERVO)
+                   failure, AI_CANDLE_DEPLOYING_ARM)
 {
     // TODO: connect contact.
     if (1 || !robot->hardware.cake_arm_in_contact.get ())
