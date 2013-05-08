@@ -170,6 +170,13 @@ Robot::main_loop ()
             Position robot_pos = asserv.get_position ();
             beacon.send_position (robot_pos.v);
             // Look for obstacles.
+            for (int i = 0; i < Beacon::pos_nb; i++)
+            {
+                vect_t pos;
+                int trust = beacon.get_position (i, pos);
+                if (trust > 70)
+                    obstacles.add (pos);
+            }
             if (usdist_control_.update ())
             {
                 radar_.update (robot_pos, obstacles);
