@@ -25,6 +25,7 @@
 from utils.observable import Observable
 from simu.utils.vector import vector
 from math import pi
+from simu.robots.apbirthday.model import side
 
 class GiftsArm (Observable):
 
@@ -38,7 +39,7 @@ class GiftsArm (Observable):
     def __arm_notified (self):
         if self.arm_cyl.pos > .9:
             push_point = (vector (self.robot_position.pos)
-                    + vector.polar (self.robot_position.angle - pi / 2, 140 + 100)
+                    + vector.polar (self.robot_position.angle - pi / 2, side + 100)
                     - vector.polar (self.robot_position.angle, 100))
             gift = self.table.nearest (push_point, level = 0, max = 150)
             if gift is not None and hasattr (gift, 'state'):

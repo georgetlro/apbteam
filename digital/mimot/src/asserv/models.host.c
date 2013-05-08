@@ -115,8 +115,8 @@ static const struct robot_t apbirthday_robot =
      * table. */
     simu_table_test_apbirthday,
     /** Robot corners, from front left, then clockwise. */
-    { { 102, 140 }, { 102, -140 }, { -108, -140 }, { -108, 70 },
-	{ -58, 140 } },
+    { { 96, 142 }, { 96, -142 }, { -126, -142 }, { -126, 81 },
+	{ -80, 142 } },
     /** Initialisation function. */
     NULL,
 };

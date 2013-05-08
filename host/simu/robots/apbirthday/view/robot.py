@@ -25,6 +25,7 @@
 import simu.inter.drawable
 from simu.view.table_eurobot2013 import PINK, colors
 import math
+from simu.robots.apbirthday.model import front, back, side
 
 COLOR_ROBOT = '#000000'
 COLOR_AXES = '#202040'
@@ -64,20 +65,20 @@ class Robot (simu.inter.drawable.Drawable):
             plate = self.cannon_model.plate
             f = self.cannon_model.arm_cyl.pos
             if plate is not None:
-                self.draw_rectangle ((-108 - f * 170, 85), (-108, -85),
+                self.draw_rectangle ((-back - f * 170, 85), (-back, -85),
                         fill = PINK)
-                self.draw_rectangle ((-108 - f * 148, 85 - 22),
-                        (-108 - f * 22, -85 + 22), fill = PINK)
+                self.draw_rectangle ((-back - f * 148, 85 - 22),
+                        (-back - f * 22, -85 + 22), fill = PINK)
                 for c in plate.cherries:
                     if c.pos:
-                        self.draw_circle ((-108 - f * (c.pos[0] + 85),
+                        self.draw_circle ((-back - f * (c.pos[0] + 85),
                             c.pos[1]), c.radius, fill = colors[c.color])
-                self.draw_rectangle ((-108 - f * 170, 85),
-                        (-108 - f * 170 - (1 - f) * 22, -85), fill = PINK)
+                self.draw_rectangle ((-back - f * 170, 85),
+                        (-back - f * 170 - (1 - f) * 22, -85), fill = PINK)
             # Draw robot body.
-            self.draw_polygon ((102, 140), (102, -140), (-108, -140),
-                    (-108, 70), (-58, 140), fill = COLOR_ROBOT)
-            self.draw_circle ((70, self.cannon_model.cannon_hit[1]), 20,
+            self.draw_polygon ((front, side), (front, -side), (-back, -side),
+                    (-back, 81), (-50, side), fill = COLOR_ROBOT)
+            self.draw_circle ((50, self.cannon_model.cannon_hit[1]), 20,
                     fill = COLOR_CANNON)
             # Draw Robot axis.
             self.draw_line ((-50, 0), (50, 0), fill = COLOR_AXES,
@@ -93,16 +94,16 @@ class Robot (simu.inter.drawable.Drawable):
             f = m.arm_cyl.pos
             for x, y, pos in ((m.far_x, m.far_y, m.far_cyl.pos),
                     (m.near_x, m.near_y, m.near_cyl.pos)):
-                e = (y - 140) * f + 140
+                e = (y - side) * f + side
                 gray = pos * 0x40
                 fill = '#%02x%02x%02x' % (gray, gray, gray)
-                self.draw_polygon ((x - 20, 140), (x - 20, e), (x + 20, e),
-                        (x + 20, 140), fill = fill)
+                self.draw_polygon ((x - 20, side), (x - 20, e), (x + 20, e),
+                        (x + 20, side), fill = fill)
             # Draw gifts arm.
             m = self.gifts_arm_model
             a = math.pi + m.arm_cyl.pos * math.pi / 6
-            self.draw_line ((0, -140), (0 + 108 * math.cos (a),
-                -140 + 108 * math.sin (a)))
+            self.draw_line ((0, -side), (0 + back * math.cos (a),
+                -side + back * math.sin (a)))
             # Draw ballon.
             if self.ballon_model.pos > .1:
                 self.draw_circle ((50, -100), self.ballon_model.pos * 75,

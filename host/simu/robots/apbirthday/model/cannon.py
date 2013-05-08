@@ -27,6 +27,7 @@ from simu.utils.trans_matrix import TransMatrix
 from simu.utils.vector import vector
 import random
 from math import pi
+from simu.robots.apbirthday.model import back
 
 class Cannon (Observable):
 
@@ -55,7 +56,7 @@ class Cannon (Observable):
         m = TransMatrix ()
         m.translate (self.robot_position.pos)
         m.rotate (self.robot_position.angle)
-        x = -108
+        x = -back
         y = (50, -50)
         for i, c in enumerate (self.contacts):
             s = True
