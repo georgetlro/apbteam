@@ -495,32 +495,15 @@ FSM_TRANS (TOP_CANDLES_LEAVE_GO_AWAY, robot_move_failure, TOP_DECISION)
 /// Plate.
 ///
 
-FSM_TRANS (TOP_PLATE_GOTO, move_success,
-           load, TOP_PLATE_APPROACH,
-           drop, TOP_PLATE_DROPING)
+FSM_TRANS (TOP_PLATE_GOTO, move_success, TOP_PLATE_APPROACH)
 {
-    if (top.plate.drop)
-    {
-        ANGFSM_HANDLE (AI, plate_drop);
-        return FSM_BRANCH (drop);
-    }
-    else
-    {
-        robot->asserv.set_speed (BOT_SPEED_PLATE);
-        robot->move.start (top.plate.loading_pos, Asserv::BACKWARD);
-        return FSM_BRANCH (load);
-    }
+    robot->asserv.set_speed (BOT_SPEED_PLATE);
+    robot->move.start (top.plate.loading_pos, Asserv::BACKWARD);
 }
 
 FSM_TRANS (TOP_PLATE_GOTO, move_failure, TOP_DECISION)
 {
     robot->strat.failure ();
-}
-
-FSM_TRANS (TOP_PLATE_DROPING, plate_droped, TOP_PLATE_GOTO)
-{
-    top.plate.drop = false;
-    robot->move.start (top.plate.approaching_pos, Asserv::BACKWARD_REVERT_OK);
 }
 
 FSM_TRANS (TOP_PLATE_APPROACH, move_success, TOP_DECISION)
@@ -540,7 +523,12 @@ FSM_TRANS (TOP_PLATE_APPROACH, top_plate_present, TOP_PLATE_LOADING)
     ANGFSM_HANDLE (AI, plate_take);
 }
 
-FSM_TRANS (TOP_PLATE_LOADING, plate_taken, TOP_DECISION)
+FSM_TRANS (TOP_PLATE_LOADING, plate_taken, TOP_PLATE_DROPING)
+{
+        ANGFSM_HANDLE (AI, plate_drop);
+}
+
+FSM_TRANS (TOP_PLATE_DROPING, plate_droped, TOP_DECISION)
 {
 }
 

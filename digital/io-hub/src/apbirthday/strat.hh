@@ -49,11 +49,6 @@ class Strat
     /// Information on a plate decision.
     struct PlateDecision
     {
-        /// Should drop plate before.
-        bool drop;
-        /// Approach position, where the robot should be before starting
-        /// approaching.
-        Position approaching_pos;
         /// Loading position, point where to go backward to load the plate. If
         /// the point is reached, there is no plate.
         vect_t loading_pos;
