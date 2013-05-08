@@ -71,6 +71,7 @@ inline void Plate::clamp_close ()
 }
 
 FSM_STATES (PLATE_OFF,
+            PLATE_WAITING_PRESSURE,
             PLATE_INIT_PREPARE,
             PLATE_INIT_TAKING,
             PLATE_INIT_UPING,
@@ -90,19 +91,14 @@ FSM_EVENTS (plate_take,
 
 FSM_START_WITH (PLATE_OFF)
 
-FSM_TRANS (PLATE_OFF, init_actuators,
-           off, PLATE_OFF,
-           on, PLATE_INIT_PREPARE)
+FSM_TRANS (PLATE_OFF, init_actuators, PLATE_WAITING_PRESSURE)
 {
-    // TODO: disabled until present.
-    if (0)
-        return FSM_BRANCH (off);
-    else
-    {
-        Plate::arm_down ();
-        Plate::clamp_open ();
-        return FSM_BRANCH (on);
-    }
+}
+
+FSM_TRANS_TIMEOUT (PLATE_WAITING_PRESSURE, 1250, PLATE_INIT_PREPARE)
+{
+    Plate::arm_down ();
+    Plate::clamp_open ();
 }
 
 FSM_TRANS_TIMEOUT (PLATE_INIT_PREPARE, 100, PLATE_INIT_TAKING)
