@@ -48,11 +48,6 @@ inline void Cannon::set_servo_pos (int pos)
     robot->hardware.servos.set_position (Servo::SERVO_CHERRY, pos);
 }
 
-inline void Cannon::set_router_state (int state)
-{
-    // Set router to OPEN or CLOSE
-}
-
 // Trap FSM
 FSM_STATES (CANNON_TRAP_OFF,
             CANNON_TRAP_BLOCK,
@@ -92,53 +87,6 @@ FSM_TRANS (CANNON_TRAP_MOVE_1, cannon_fire_ok, CANNON_TRAP_BLOCK)
 FSM_TRANS (CANNON_TRAP_MOVE_2, cannon_fire_ok, CANNON_TRAP_BLOCK)
 {
     Cannon::set_servo_pos (Cannon::BLOCK);
-}
-
-
-// Router FSM
-
-FSM_STATES (CANNON_ROUTER_OFF,
-            CANNON_ROUTER_SLEEPING,
-            CANNON_ROUTER_TRACKING,
-            CANNON_ROUTER_PUSHING)
-
-FSM_START_WITH (CANNON_ROUTER_OFF)
-
-FSM_TRANS (CANNON_ROUTER_OFF, init_actuators, CANNON_ROUTER_SLEEPING)
-{
-    robot->cannon.set_router_state (Cannon::OPEN);
-}
-
-FSM_TRANS (CANNON_ROUTER_SLEEPING, cannon_fire, CANNON_ROUTER_TRACKING)
-{
-    // We do nothing here
-}
-
-FSM_TRANS (CANNON_ROUTER_TRACKING, cannon_fire_ok, CANNON_ROUTER_SLEEPING)
-{
-   // We do nothing here.
-}
-
-FSM_TRANS_TIMEOUT (CANNON_ROUTER_TRACKING, 250,
-                    nothing_to_push, CANNON_ROUTER_TRACKING,
-                    destroy, CANNON_ROUTER_PUSHING)
-{
-    // Check if we have something to push or not
-    // return FSM_BRANCH(nothing_to_push);
-    return FSM_BRANCH(destroy);
-    // If we have something to push, push next event
-}
-
-FSM_TRANS_TIMEOUT (CANNON_ROUTER_PUSHING, 250, CANNON_ROUTER_TRACKING)
-{
-    // Open the router after the timeout
-    robot->cannon.set_router_state (Cannon::OPEN);
-}
-
-FSM_TRANS (CANNON_ROUTER_PUSHING, cannon_fire_ok, CANNON_ROUTER_SLEEPING)
-{
-    // Open router
-    robot->cannon.set_router_state (Cannon::OPEN);
 }
 
 // Cannon main FSM

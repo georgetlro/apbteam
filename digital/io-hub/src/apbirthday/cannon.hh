@@ -44,7 +44,6 @@ class Cannon
         static void blower_off ();
         static void blower_on ();
         static void set_servo_pos (int pos);
-        void set_router_state (int state);
 };
 
 #endif // cannon_hh
