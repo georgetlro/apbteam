@@ -162,6 +162,16 @@ void Candles::unpush_far ()
     robot->hardware.cake_push_far_in.set (true);
 }
 
+void Candles::servo_near_deploy ()
+{
+    robot->hardware.servos.set_position (Servo::SERVO_CAKE, 0x1995);
+}
+
+void Candles::servo_near_undeploy ()
+{
+    robot->hardware.servos.set_position (Servo::SERVO_CAKE, 0x0600);
+}
+
 void Candles::deploy_arm ()
 {
     // Deploy arm.
@@ -193,11 +203,14 @@ void Candles::undeploy_arm_3 ()
 FSM_STATES (AI_CANDLE_OFF,
             AI_CANDLE_INIT,
             AI_CANDLE_SLEEPING,
-            AI_CANDLE_DEPLOYING,
+            AI_CANDLE_DEPLOYING_SERVO,
+            AI_CANDLE_DEPLOYING_ARM,
+            AI_CANDLE_FALLING_BACK_TO_UNDEPLOYED_SERVO,
             AI_CANDLE_FALLING_BACK_TO_UNDEPLOYED_1,
             AI_CANDLE_FALLING_BACK_TO_UNDEPLOYED_2,
             AI_CANDLE_READY,
-            AI_CANDLE_UNDEPLOYING,
+            AI_CANDLE_UNDEPLOYING_SERVO,
+            AI_CANDLE_UNDEPLOYING_1,
             AI_CANDLE_UNDEPLOYING_2,
             AI_CANDLE_UNDEPLOYING_3)
 
@@ -214,12 +227,12 @@ FSM_TRANS (AI_CANDLE_OFF, init_actuators, AI_CANDLE_INIT)
     Candles::deploy_arm ();
 }
 
-FSM_TRANS_TIMEOUT (AI_CANDLE_INIT, 200, AI_CANDLE_UNDEPLOYING)
+FSM_TRANS_TIMEOUT (AI_CANDLE_INIT, 200, AI_CANDLE_UNDEPLOYING_SERVO)
 {
-    Candles::undeploy_arm_1 ();
+    Candles::servo_near_undeploy ();
 }
 
-FSM_TRANS (AI_CANDLE_SLEEPING, ai_candle_deploy, AI_CANDLE_DEPLOYING)
+FSM_TRANS (AI_CANDLE_SLEEPING, ai_candle_deploy, AI_CANDLE_DEPLOYING_ARM)
 {
     Candles::deploy_arm ();
 }
@@ -229,9 +242,14 @@ FSM_TRANS (AI_CANDLE_SLEEPING, ai_candle_undeploy, AI_CANDLE_SLEEPING)
     robot->fsm_queue.post (FSM_EVENT (ai_candle_success));
 }
 
-FSM_TRANS_TIMEOUT (AI_CANDLE_DEPLOYING, 200,
+FSM_TRANS_TIMEOUT (AI_CANDLE_DEPLOYING_ARM, 300, AI_CANDLE_DEPLOYING_SERVO)
+{
+    Candles::servo_near_deploy ();
+}
+
+FSM_TRANS_TIMEOUT (AI_CANDLE_DEPLOYING_SERVO, 300,
                    success, AI_CANDLE_READY,
-                   failure, AI_CANDLE_FALLING_BACK_TO_UNDEPLOYED_1)
+                   failure, AI_CANDLE_FALLING_BACK_TO_UNDEPLOYED_SERVO)
 {
     // TODO: connect contact.
     if (1 || !robot->hardware.cake_arm_out_contact.get ())
@@ -242,10 +260,16 @@ FSM_TRANS_TIMEOUT (AI_CANDLE_DEPLOYING, 200,
     else
     {
         // Get back to Sleep.
-        Candles::undeploy_arm_1 ();
+        Candles::servo_near_undeploy ();
         robot->fsm_queue.post (FSM_EVENT (ai_candle_failure));
         return FSM_BRANCH (failure);
     }
+}
+
+FSM_TRANS_TIMEOUT (AI_CANDLE_FALLING_BACK_TO_UNDEPLOYED_SERVO, 300,
+                   AI_CANDLE_FALLING_BACK_TO_UNDEPLOYED_1)
+{
+        Candles::undeploy_arm_1 ();
 }
 
 FSM_TRANS_TIMEOUT (AI_CANDLE_FALLING_BACK_TO_UNDEPLOYED_1, 160, AI_CANDLE_FALLING_BACK_TO_UNDEPLOYED_2)
@@ -311,12 +335,17 @@ FSM_TRANS (AI_CANDLE_READY, ai_candle_deploy, AI_CANDLE_READY)
     robot->fsm_queue.post (FSM_EVENT (ai_candle_success));
 }
 
-FSM_TRANS (AI_CANDLE_READY, ai_candle_undeploy, AI_CANDLE_UNDEPLOYING)
+FSM_TRANS (AI_CANDLE_READY, ai_candle_undeploy, AI_CANDLE_UNDEPLOYING_SERVO)
+{
+    Candles::servo_near_undeploy ();
+}
+
+FSM_TRANS_TIMEOUT (AI_CANDLE_UNDEPLOYING_SERVO, 300, AI_CANDLE_UNDEPLOYING_1)
 {
     Candles::undeploy_arm_1 ();
 }
 
-FSM_TRANS_TIMEOUT (AI_CANDLE_UNDEPLOYING, 200, AI_CANDLE_UNDEPLOYING_2)
+FSM_TRANS_TIMEOUT (AI_CANDLE_UNDEPLOYING_1, 200, AI_CANDLE_UNDEPLOYING_2)
 {
     Candles::undeploy_arm_2 ();
 }
@@ -328,7 +357,7 @@ FSM_TRANS_TIMEOUT (AI_CANDLE_UNDEPLOYING_2, 42, AI_CANDLE_UNDEPLOYING_3)
 
 FSM_TRANS_TIMEOUT (AI_CANDLE_UNDEPLOYING_3, 100,
                    success, AI_CANDLE_SLEEPING,
-                   failure, AI_CANDLE_READY)
+                   failure, AI_CANDLE_FALLING_BACK_TO_UNDEPLOYED_SERVO)
 {
     // TODO: connect contact.
     if (1 || !robot->hardware.cake_arm_in_contact.get ())

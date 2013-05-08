@@ -80,6 +80,8 @@ class Candles
         static void flamby_far ();
         static void crampe_arm ();
         static void crampe_far ();
+        static void servo_near_deploy ();
+        static void servo_near_undeploy ();
     private:
         static const int total_count = 20;
         static const int near_count = 12;
