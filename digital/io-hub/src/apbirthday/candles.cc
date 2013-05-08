@@ -201,6 +201,7 @@ void Candles::undeploy_arm_3 ()
 
 // Global candle FSM.
 FSM_STATES (AI_CANDLE_OFF,
+            AI_CANDLE_WAITING_PRESSURE,
             AI_CANDLE_INIT,
             AI_CANDLE_SLEEPING,
             AI_CANDLE_DEPLOYING_SERVO,
@@ -222,7 +223,10 @@ FSM_EVENTS (ai_candle_deploy,
 
 FSM_START_WITH (AI_CANDLE_OFF)
 
-FSM_TRANS (AI_CANDLE_OFF, init_actuators, AI_CANDLE_INIT)
+FSM_TRANS (AI_CANDLE_OFF, init_actuators, AI_CANDLE_WAITING_PRESSURE)
+{}
+
+FSM_TRANS_TIMEOUT (AI_CANDLE_WAITING_PRESSURE, 1000, AI_CANDLE_INIT)
 {
     Candles::deploy_arm ();
 }
