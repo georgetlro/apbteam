@@ -351,6 +351,8 @@ FSM_TRANS (TOP_INIT_ACTUATORS, init_done, TOP_INIT)
 
 FSM_TRANS (TOP_INIT, init_start_round, TOP_DECISION)
 {
+    robot->beacon.on (true);
+    robot->beacon.set_robots_nb (!robot->hardware.ihm_robot_nb.get () ? 2 : 1);
 }
 
 FSM_TRANS_TIMEOUT (TOP_DECISION, 1,

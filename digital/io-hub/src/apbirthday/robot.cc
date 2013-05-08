@@ -139,6 +139,7 @@ Robot::main_loop ()
             ended = true;
             hardware.ballon_funny_action.set ();
             asserv.stop ();
+            robot->beacon.on (false);
         }
         else if (ended && !stop_done && chrono.remaining_time_ms () < 0)
         {
