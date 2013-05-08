@@ -94,6 +94,7 @@ inline void Drinks::lower_close ()
 }
 
 FSM_STATES (DRINKS_OFF,
+            DRINKS_WAIT_PRESSURE,
             DRINKS_INIT_PREPARING,
             DRINKS_INIT_UPING,
             DRINKS_INIT_DOWNING,
@@ -112,9 +113,13 @@ FSM_EVENTS (drinks_take,
 
 FSM_START_WITH (DRINKS_OFF)
 
-FSM_TRANS (DRINKS_OFF, init_actuators,
-           off, DRINKS_OFF,
-           on, DRINKS_INIT_PREPARING)
+FSM_TRANS (DRINKS_OFF, init_actuators, DRINKS_WAIT_PRESSURE)
+{
+}
+
+FSM_TRANS_TIMEOUT (DRINKS_WAIT_PRESSURE, 1500,
+                   off, DRINKS_OFF,
+                   on, DRINKS_INIT_PREPARING)
 {
     // TODO: disabled until present.
     if (1)
