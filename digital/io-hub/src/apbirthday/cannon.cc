@@ -45,6 +45,7 @@ inline void Cannon::blower_off ()
 inline void Cannon::set_servo_pos (int pos)
 {
     // Switch the servo to BLOCK, POS1 or POS2
+    robot->hardware.servos.set_position (Servo::SERVO_CHERRY, pos);
 }
 
 inline void Cannon::set_router_state (int state)

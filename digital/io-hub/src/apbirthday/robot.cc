@@ -336,6 +336,13 @@ Robot::proto_handle (ucoo::Proto &proto, char cmd, const uint8_t *args, int size
         pot_regul.set_wiper (args[0], ucoo::bytes_pack (args[1], args[2]),
                              args[3] ? true : false);
         break;
+    case c ('s', 3):
+        // Set servo position.
+        // - 1b: servo index.
+        // - 1h: servo position.
+        hardware.servos.set_position (args[0],
+                                      ucoo::bytes_pack (args[1], args[2]));
+        break;
     case c ('l', 3):
         // Test LCD interface, set team color.
         // - 3B: R, G, B.

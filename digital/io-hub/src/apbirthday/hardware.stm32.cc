@@ -64,7 +64,8 @@ Hardware::Hardware ()
       adc_dist0 (adc, 0), adc_dist1 (adc, 1),
       adc_dist2 (adc, 2), adc_dist3 (adc, 3),
       adc_cake_front (adc, 6), adc_cake_back (adc, 7),
-      adc_pressure (adc, 8)
+      adc_pressure (adc, 8),
+      servos ()
 {
     rcc_peripheral_enable_clock (&RCC_AHB1ENR, RCC_AHB1ENR_IOPAEN);
     rcc_peripheral_enable_clock (&RCC_AHB1ENR, RCC_AHB1ENR_IOPBEN);
@@ -105,6 +106,8 @@ Hardware::Hardware ()
                              GPIO10 | GPIO11);
     gpio_set_af (GPIOB, GPIO_AF4, GPIO10 | GPIO11);
     zb_i2c.enable ();
+    // Servos
+    servos.enable ();
     // GPIO.
     raw_jack.pull (ucoo::Gpio::PULL_UP);
     ihm_color.pull (ucoo::Gpio::PULL_UP);

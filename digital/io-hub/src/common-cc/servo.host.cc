@@ -1,6 +1,3 @@
-#ifndef cannon_hh
-#define cannon_hh
-
 // io-hub - Modular Input/Output. {{{
 //
 // Copyright (C) 2013 Maxime Hadjinlian
@@ -24,27 +21,19 @@
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 //
 // }}}
+#include "servo.hh"
 
-class Cannon
+Servo::Servo ()
 {
-    public:
-        Cannon ();
-        enum ServoPos
-        {
-            BLOCK = 0x0800,
-            POS1 = 0x1380,
-            POS2 = 0x0a00
-        };
-        enum StateRouter
-        {
-            OPEN,
-            CLOSE
-        };
-        // GPIO manipulation.
-        static void blower_off ();
-        static void blower_on ();
-        static void set_servo_pos (int pos);
-        void set_router_state (int state);
-};
+}
 
-#endif // cannon_hh
+void
+Servo::enable ()
+{
+}
+
+void
+Servo::set_position(int servo, int pos)
+{
+}
+
