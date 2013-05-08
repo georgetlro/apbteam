@@ -35,6 +35,7 @@ class Strat
     {
         CANDLES,
         PLATE,
+        CANNON,
         GIFTS,
     };
     /// Information on a candle decision.

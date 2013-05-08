@@ -307,6 +307,10 @@ ANGFSM_STATES (
             TOP_PLATE_LOADING,
             // Plate: drop plate.
             TOP_PLATE_DROPING,
+            // Cannon: go to fire position.
+            TOP_CANNON_GOTO,
+            // Cannon: Firing.
+            TOP_CANNON_FIRING,
             // Gifts: go to gifts.
             TOP_GIFTS_GOTO,
             // Gifts: go to first gift.
@@ -358,6 +362,7 @@ FSM_TRANS (TOP_INIT, init_start_round, TOP_DECISION)
 FSM_TRANS_TIMEOUT (TOP_DECISION, 1,
                    candles, TOP_CANDLES_GOTO_NORMAL,
                    plate, TOP_PLATE_GOTO,
+                   cannon, TOP_CANNON_GOTO,
                    gifts, TOP_GIFTS_GOTO,
                    none, TOP_START)
 {
@@ -376,6 +381,9 @@ FSM_TRANS_TIMEOUT (TOP_DECISION, 1,
         robot->strat.decision_plate (top.plate);
         robot->move.start (d_pos, Asserv::BACKWARD_REVERT_OK);
         return FSM_BRANCH (plate);
+    case Strat::CANNON:
+        robot->move.start (d_pos);
+        return FSM_BRANCH (cannon);
     case Strat::GIFTS:
         robot->strat.decision_gifts (top.gifts);
         robot->move.start (d_pos, Asserv::REVERT_OK);
@@ -533,6 +541,23 @@ FSM_TRANS (TOP_PLATE_APPROACH, top_plate_present, TOP_PLATE_LOADING)
 }
 
 FSM_TRANS (TOP_PLATE_LOADING, plate_taken, TOP_DECISION)
+{
+}
+
+///
+/// Cannon mode.
+///
+
+FSM_TRANS (TOP_CANNON_GOTO, move_success, TOP_CANNON_FIRING)
+{
+    ANGFSM_HANDLE (AI, cannon_fire);
+}
+
+FSM_TRANS (TOP_CANNON_GOTO, move_failure, TOP_DECISION)
+{
+}
+
+FSM_TRANS (TOP_CANNON_FIRING, cannon_fire_ok, TOP_DECISION)
 {
 }
 

@@ -34,6 +34,8 @@ Strat::decision (Position &pos)
     static int step;
     static const int plate_app = pg_plate_size_border + BOT_SIZE_RADIUS + 20;
     static const int plate_load = pg_plate_size_border + BOT_SIZE_BACK - 40;
+    if (step > 4)
+        step = 2;
     switch (step++)
     {
     case 0:
@@ -65,11 +67,17 @@ Strat::decision (Position &pos)
         pos.v = (vect_t) { 900, pg_gifts_distance + BOT_SIZE_SIDE };
         pos.a = 0;
         return GIFTS;
-    case 2:
     default:
+    case 2:
         pos.v = pg_cake_pos;
         pos.a = 0;
         return CANDLES;
+    case 4:
+        if (team_color)
+            pos = pg_position_deg (1500, 1200, 90);
+        else
+            pos = pg_position_deg (1500 - 200, 1200, 90);
+        return CANNON;
     }
 }
 
