@@ -348,6 +348,10 @@ Robot::proto_handle (ucoo::Proto &proto, char cmd, const uint8_t *args, int size
         // - 3B: R, G, B.
         lcd.team_color (args[0], args[1], args[2]);
         break;
+    case c ('v', 0):
+        // Start the cannon
+        FSM_HANDLE (AI, cannon_fire);
+        break;
     case c ('A', 1):
         // Asserv position stats.
         // 1B: stat interval.
