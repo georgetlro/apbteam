@@ -25,6 +25,7 @@
 #include "robot.hh"
 #include "defs.hh"
 #include "candles.hh"
+#include "rgb.hh"
 
 Candles::Candles (int calif_mode)
 {
@@ -280,9 +281,26 @@ FSM_TRANS (AI_CANDLE_READY, ai_candle_blow, AI_CANDLE_READY)
             else if (robot->candles.color[robot->candles.actual_pos[i]] == Candles::UNKNOWN)
             {
                 if (Candles::is_far (robot->candles.actual_pos[i]))
-                    FSM_HANDLE (AI, ai_candle_far_analyse);
+                {
+                    enum Rgb::color c = robot->rgb.get_candle_far_color ();
+                    if (c == Rgb::RED)
+                        robot->candles.color[robot->candles.actual_pos[i]] = Candles::RED;
+                    else if (c == Rgb::BLUE)
+                        robot->candles.color[robot->candles.actual_pos[i]] = Candles::BLUE;
+                    if (robot->candles.color[robot->candles.actual_pos[i]] == (Candles::Color) team_color)
+                        FSM_HANDLE (AI, ai_candle_far_punch);
+                }
                 else
-                    FSM_HANDLE (AI, ai_candle_near_analyse);
+                {
+                    enum Rgb::color c = robot->rgb.get_candle_near_color ();
+                    if (c == Rgb::RED)
+                        robot->candles.color[robot->candles.actual_pos[i]] = Candles::RED;
+                    else if (c == Rgb::BLUE)
+                        robot->candles.color[robot->candles.actual_pos[i]] = Candles::BLUE;
+                    if (robot->candles.color[robot->candles.actual_pos[i]] == (Candles::Color) team_color)
+                        FSM_HANDLE (AI, ai_candle_near_punch);
+
+                }
             }
         }
     }
@@ -360,76 +378,4 @@ FSM_TRANS (AI_CANDLE_NEAR_SLEEPING, ai_candle_near_punch, AI_CANDLE_NEAR_PUNCHIN
 FSM_TRANS_TIMEOUT (AI_CANDLE_NEAR_PUNCHING, 37, AI_CANDLE_NEAR_SLEEPING)
 {
     Candles::unpush_near ();
-}
-
-// Far analyse FSM.
-FSM_STATES (AI_CANDLE_FAR_ANALYSE_SLEEP,
-            AI_CANDLE_FAR_ANALYSING)
-
-FSM_EVENTS (ai_candle_far_analyse)
-
-FSM_START_WITH (AI_CANDLE_FAR_ANALYSE_SLEEP)
-
-FSM_TRANS (AI_CANDLE_FAR_ANALYSE_SLEEP,
-           ai_candle_far_analyse,
-           AI_CANDLE_FAR_ANALYSING)
-{
-    // TODO: launch color analyse.
-}
-
-FSM_TRANS_TIMEOUT (AI_CANDLE_FAR_ANALYSING, 10, AI_CANDLE_FAR_ANALYSE_SLEEP) //TODO timeout value
-{
-    // TODO Get color results and update table.
-    // ...
-    // Update color.
-    if (true) // TODO color analysise is ok
-    {
-        robot->candles.color[robot->candles.actual_pos[Candles::FAR]] =
-            Candles::RED; // TODO = color_result
-        // Update whole colors.
-        robot->candles.deduce ();
-        // Send blow event.
-        FSM_HANDLE (AI, ai_candle_blow);
-    }
-    else
-    {
-        // Too bad, we do not have a valid color analysis.
-        robot->candles.actual_pos[Candles::FAR] = -1;
-    }
-}
-
-// Near analyse FSM.
-FSM_STATES (AI_CANDLE_NEAR_ANALYSE_SLEEP,
-            AI_CANDLE_NEAR_ANALYSING)
-
-FSM_EVENTS (ai_candle_near_analyse)
-
-FSM_START_WITH (AI_CANDLE_NEAR_ANALYSE_SLEEP)
-
-FSM_TRANS (AI_CANDLE_NEAR_ANALYSE_SLEEP,
-           ai_candle_near_analyse,
-           AI_CANDLE_NEAR_ANALYSING)
-{
-    // TODO: Launch color analyse.
-}
-
-FSM_TRANS_TIMEOUT (AI_CANDLE_NEAR_ANALYSING, 10, AI_CANDLE_NEAR_ANALYSE_SLEEP) //TODO timeout value
-{
-    // TODO Get color results and update table.
-    // ...
-    // Update color.
-    if (true) // TODO color analysise is ok
-    {
-        robot->candles.color[robot->candles.actual_pos[Candles::NEAR]] =
-            Candles::RED; // TODO = color_result
-        // Update whole colors.
-        robot->candles.deduce ();
-        // Send blow event.
-        FSM_HANDLE (AI, ai_candle_blow);
-    }
-    else
-    {
-        // Too bad, we do not have a valid color analysis.
-        robot->candles.actual_pos[Candles::NEAR] = -1;
-    }
 }
