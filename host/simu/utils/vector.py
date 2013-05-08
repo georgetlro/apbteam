@@ -223,6 +223,16 @@ class vector (object):
         """
         return vector (-self.y, self.x)
 
+    def rotate (self, angle):
+        """Return the vector, rotated by given angle.
+
+        >>> vector (1, 2).rotate (math.pi / 2) # doctest: +ELLIPSIS
+        vector(-2.0, 1.0...)
+        """
+        c = math.cos (angle)
+        s = math.sin (angle)
+        return vector (c * self.x - s * self.y, s * self.x + c * self.y)
+
     def angle (self):
         """Return angle from (1, 0).
 
