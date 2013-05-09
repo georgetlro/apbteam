@@ -172,6 +172,8 @@ class Robot : public ucoo::Proto::Handler
     int stats_pressure_, stats_pressure_cpt_;
     /// RGB stats interval, counter and type.
     int stats_rgb_, stats_rgb_cpt_, stats_rgb_type_;
+    /// LCD position counter.
+    int lcd_send_position_cpt_;
 };
 
 /// Global instance pointer.

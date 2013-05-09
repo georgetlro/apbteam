@@ -25,6 +25,8 @@
 // }}}
 #include "i2c_queue.hh"
 
+#include "defs.hh"
+
 /// Interface to LCD board.
 class LCD : public I2cQueue::Slave
 {
@@ -35,6 +37,18 @@ class LCD : public I2cQueue::Slave
     void recv_status (const uint8_t *status);
     /// Send team color.
     void team_color (uint8_t r, uint8_t g, uint8_t b);
+    /// Send chrono if changed.
+    void chrono (int s);
+    /// Send message.
+    void message (const char *msg);
+    /// Send robot position.
+    void robot_position (const Position &pos);
+    /// Send obstacles.
+    void obstacles (const vect_t *pos, int pos_nb);
+    /// Send target position.
+    void target (const vect_t &pos);
+  private:
+    int last_chrono_sent_;
 };
 
 #endif // lcd_hh

@@ -24,6 +24,8 @@
 #include "obstacles.hh"
 #include "bot.hh"
 
+#include "robot.hh"
+
 extern "C" {
 #include "modules/math/geometry/distance.h"
 }
@@ -51,10 +53,8 @@ Obstacles::update ()
                 changed_ = true;
         }
     }
-#ifdef TARGET_host
     if (changed_)
     {
-        SimuReport &r = robot->hardware.simu_report;
         vect_t o[obstacles_nb_];
         int o_nb = 0;
         for (int i = 0; i < obstacles_nb_; i++)
@@ -62,9 +62,12 @@ Obstacles::update ()
             if (obstacles_[i].valid)
                 o[o_nb++] = obstacles_[i].pos;
         }
+#ifdef TARGET_host
+        SimuReport &r = robot->hardware.simu_report;
         r.pos (o, o_nb, 0);
-    }
 #endif
+        robot->lcd.obstacles (o, o_nb);
+    }
     changed_ = false;
 }
 

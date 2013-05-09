@@ -386,6 +386,8 @@ FSM_TRANS (TOP_START, init_actuators, TOP_INIT_ACTUATORS)
 {
     // TODO: make sure the operator do not forget this is demo mode!
     robot->demo = !robot->hardware.ihm_strat.get ();
+    if (robot->demo)
+        robot->lcd.message ("demo mode");
     robot->pressure.set (BOT_NORMAL_PRESSURE);
 }
 
@@ -396,6 +398,11 @@ FSM_TRANS (TOP_INIT_ACTUATORS, init_done, TOP_INIT)
     // Color dependent init can go here.
     robot->gifts.compute_pos ();
     robot->strat.color_init ();
+    if (team_color)
+        robot->lcd.team_color (0, 0, 255);
+    else
+        robot->lcd.team_color (255, 0, 0);
+    robot->lcd.message ("ready");
 }
 
 FSM_TRANS (TOP_INIT, init_start_round, TOP_DECISION)

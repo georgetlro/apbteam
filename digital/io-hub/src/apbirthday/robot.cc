@@ -72,7 +72,8 @@ Robot::Robot ()
       stats_proto_ (0),
       stats_asserv_ (0), stats_beacon_ (0),
       stats_chrono_ (false), stats_chrono_last_s_ (-1),
-      stats_inputs_ (0), stats_usdist_ (0), stats_cake_ (0), stats_pressure_ (0), stats_rgb_ (0)
+      stats_inputs_ (0), stats_usdist_ (0), stats_cake_ (0), stats_pressure_ (0), stats_rgb_ (0),
+      lcd_send_position_cpt_ (1)
 {
     robot = this;
     // Fill I/O arrays.
@@ -169,8 +170,14 @@ Robot::main_loop ()
         zb_i2c_queue_.sync ();
         if (!ended)
         {
+            lcd.chrono (chrono.remaining_time_ms () / 1000);
             Position robot_pos = asserv.get_position ();
             beacon.send_position (robot_pos.v);
+            if (!--lcd_send_position_cpt_)
+            {
+                lcd.robot_position (robot_pos);
+                lcd_send_position_cpt_ = 125;
+            }
             // Look for obstacles.
             for (int i = 0; i < Beacon::pos_nb; i++)
             {
