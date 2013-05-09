@@ -536,10 +536,19 @@ FSM_TRANS (TOP_PLATE_GOTO, move_failure, TOP_DECISION)
     robot->strat.failure ();
 }
 
-FSM_TRANS (TOP_PLATE_APPROACH, move_success, TOP_DECISION)
+FSM_TRANS (TOP_PLATE_APPROACH, move_success,
+           leave, TOP_PLATE_LEAVE,
+           end, TOP_DECISION)
 {
     // TODO: no plate.
     robot->strat.failure ();
+    if (top.plate.leave)
+    {
+        robot->move.start (top.plate.approaching_pos.v, Asserv::REVERT_OK);
+        return FSM_BRANCH (leave);
+    }
+    else
+        return FSM_BRANCH (end);
 }
 
 FSM_TRANS (TOP_PLATE_APPROACH, move_failure, TOP_DECISION)
