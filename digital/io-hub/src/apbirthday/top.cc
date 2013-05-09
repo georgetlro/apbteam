@@ -391,6 +391,8 @@ FSM_TRANS (TOP_START, init_actuators, TOP_INIT_ACTUATORS)
 
 FSM_TRANS (TOP_INIT_ACTUATORS, init_done, TOP_INIT)
 {
+    robot->hardware.gift_out.reset ();
+    robot->hardware.gift_in.set ();
     // Color dependent init can go here.
     robot->gifts.compute_pos ();
     robot->strat.color_init ();
