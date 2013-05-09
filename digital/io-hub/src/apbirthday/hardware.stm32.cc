@@ -60,7 +60,7 @@ Hardware::Hardware ()
       ballon_funny_action (GPIOA, 10),
       rgb_candle_near (GPIOE, 13),
       rgb_candle_far (GPIOE, 10),
-      rgb_cannon (GPIOE, 13),
+      rgb_cannon (GPIOE, 15),
       pneum_open (GPIOD, 5),
       dist0_sync (GPIOC, 0), dist1_sync (GPIOC, 1),
       dist2_sync (GPIOC, 2), dist3_sync (GPIOC, 3),
