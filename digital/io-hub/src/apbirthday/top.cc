@@ -269,6 +269,11 @@ top_fsm_gen_event ()
     if (ANGFSM_CAN_HANDLE (AI, top_gifts_open))
     {
         Position pos = robot->asserv.get_position ();
+        if (pos.v.y > pg_gifts_distance + BOT_SIZE_SIDE + 60)
+        {
+            if (ANGFSM_CAN_HANDLE (AI, top_gifts_blocked))
+                return true;
+        }
         int arm_x = pos.v.x + bot_gift_arm_x;
         for (int i = 0; i < Gifts::nb; i++)
         {
@@ -364,6 +369,8 @@ ANGFSM_EVENTS (
             top_plate_present,
             // Open a gift now.
             top_gifts_open,
+            // Problem with gifts.
+            top_gifts_blocked,
             // Start candle demo.
             top_demo_candles,
             // Start candle arm demo.
@@ -669,6 +676,11 @@ FSM_TRANS (TOP_GIFTS_OPEN, top_gifts_open, TOP_GIFTS_OPEN)
     robot->hardware.gift_in.reset ();
     // This is the delay to keep the arm out.
     top.gifts_opening = 250 / 4;
+}
+
+FSM_TRANS (TOP_GIFTS_OPEN, top_gifts_blocked, TOP_DECISION)
+{
+    robot->move.stop ();
 }
 
 ///
