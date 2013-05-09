@@ -36,6 +36,8 @@ struct top_t
     Strat::CandlesDecision candles;
     /// Last blown candles.
     int candles_last_blown[Candles::FLOOR_NB];
+    /// Wow, we are too far or too near the cake!
+    int candles_too_far;
     /// Plate decision information.
     Strat::PlateDecision plate;
     /// Gifts decision information.
@@ -123,6 +125,7 @@ top_follow_or_leave ()
     {
         robot->asserv.follow (top.candles.dir_sign == 1
                               ? Asserv::FORWARD : Asserv::BACKWARD);
+        top.candles_too_far = 0;
         return FSM_BRANCH (candles);
     }
     else
@@ -196,6 +199,10 @@ top_update ()
         else
             cons = robot->hardware.adc_cake_back.read () - back_offset;
         robot->asserv.follow_update (cons * k / 1000);
+        if (std::abs (cons) > 0x400)
+            top.candles_too_far++;
+        else
+            top.candles_too_far = 0;
     }
     if (top.gifts_opening)
     {
@@ -222,7 +229,8 @@ top_fsm_gen_event ()
                 return true;
         }
         // Check for obstacle.
-        if (top_follow_blocking (dir_sign))
+        if (top_follow_blocking (dir_sign)
+            || top.candles_too_far > 125)
             if (ANGFSM_HANDLE (AI, top_follow_blocked))
                 return true;
         // Check for a candle to blow.
