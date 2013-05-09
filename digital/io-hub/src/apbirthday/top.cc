@@ -40,6 +40,8 @@ struct top_t
     int candles_too_far;
     /// Plate decision information.
     Strat::PlateDecision plate;
+    /// Only one contact seen, but for a long time.
+    int plate_contact_single;
     /// Gifts decision information.
     Strat::GiftsDecision gifts;
     /// Gift being opened, remember to close the arm after a delay.
@@ -230,7 +232,7 @@ top_fsm_gen_event ()
         }
         // Check for obstacle.
         if (top_follow_blocking (dir_sign)
-            || top.candles_too_far > 125)
+            || top.candles_too_far > 25)
             if (ANGFSM_HANDLE (AI, top_follow_blocked))
                 return true;
         // Check for a candle to blow.
@@ -253,6 +255,16 @@ top_fsm_gen_event ()
         if (ANGFSM_HANDLE (AI, top_plate_present))
             return true;
     }
+    else if (!robot->hardware.cherry_plate_left_contact.get ()
+        || !robot->hardware.cherry_plate_right_contact.get ())
+    {
+        top.plate_contact_single++;
+        if (top.plate_contact_single > 20
+            && ANGFSM_HANDLE (AI, top_plate_present))
+            return true;
+    }
+    else
+        top.plate_contact_single = 0;
     // Gifts.
     if (ANGFSM_CAN_HANDLE (AI, top_gifts_open))
     {
@@ -516,6 +528,7 @@ FSM_TRANS (TOP_PLATE_GOTO, move_success, TOP_PLATE_APPROACH)
 {
     robot->asserv.set_speed (BOT_SPEED_PLATE);
     robot->move.start (top.plate.loading_pos, Asserv::BACKWARD);
+    top.plate_contact_single = 0;
 }
 
 FSM_TRANS (TOP_PLATE_GOTO, move_failure, TOP_DECISION)
