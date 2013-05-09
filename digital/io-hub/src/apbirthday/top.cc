@@ -232,7 +232,7 @@ top_fsm_gen_event ()
         }
         // Check for obstacle.
         if (top_follow_blocking (dir_sign)
-            || top.candles_too_far > 25)
+            || top.candles_too_far > 75)
             if (ANGFSM_HANDLE (AI, top_follow_blocked))
                 return true;
         // Check for a candle to blow.
