@@ -297,6 +297,8 @@ ANGFSM_STATES (
             TOP_CANDLES_LEAVE_TANGENT_MOVE,
             // Candles: turn to leave, undeploy arm as soon as possible.
             TOP_CANDLES_LEAVE_TURN,
+            // Candles: wait for slow undeploying.
+            TOP_CANDLES_LEAVE_UNDEPLOY,
             // Candles: go away so that the robot is free to turn.
             TOP_CANDLES_LEAVE_GO_AWAY,
             // Plate: go to plate, normal move.
@@ -472,17 +474,21 @@ FSM_TRANS (TOP_CANDLES_LEAVE_TANGENT_MOVE, robot_move_failure,
 }
 
 FSM_TRANS (TOP_CANDLES_LEAVE_TURN, robot_move_success,
-           TOP_CANDLES_LEAVE_GO_AWAY)
+           TOP_CANDLES_LEAVE_UNDEPLOY)
 {
     // TODO: undeploy earlier, by computing arm end position.
     ANGFSM_HANDLE (AI, ai_candle_undeploy);
-    robot->asserv.move_distance (BOT_SIZE_RADIUS - BOT_SIZE_SIDE);
 }
 
 FSM_TRANS (TOP_CANDLES_LEAVE_TURN, robot_move_failure,
-           TOP_CANDLES_LEAVE_GO_AWAY)
+           TOP_CANDLES_LEAVE_UNDEPLOY)
 {
     ANGFSM_HANDLE (AI, ai_candle_undeploy);
+}
+
+FSM_TRANS (TOP_CANDLES_LEAVE_UNDEPLOY, ai_candle_success,
+           TOP_CANDLES_LEAVE_GO_AWAY)
+{
     robot->asserv.move_distance (BOT_SIZE_RADIUS - BOT_SIZE_SIDE);
 }
 
