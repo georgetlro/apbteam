@@ -27,30 +27,145 @@
 #include "debug.host.hh"
 #include "bot.hh"
 
+static const vect_t plate_pos[Strat::plate_nb] = {
+    { 200, 1750 },
+    { 200, 1400 },
+    { 200, 1000 },
+    { 200, 600 },
+    { 200, 250 },
+    { 3000 - 200, 1750 },
+    { 3000 - 200, 1400 },
+    { 3000 - 200, 1000 },
+    { 3000 - 200, 600 },
+    { 3000 - 200, 250 },
+};
+
+Strat::Strat ()
+{
+    for (int i = 0; i < plate_nb; i++)
+        plate_visited_[i] = false;
+}
+
+void
+Strat::color_init ()
+{
+    if (team_color)
+        plate_visited_[1] = false;
+    else
+        plate_visited_[5 + 1] = false;
+}
+
+int
+Strat::score_plate (Position &pos)
+{
+    static const int plate_app = pg_plate_size_border + BOT_SIZE_RADIUS + 20;
+    static const int plate_load = pg_plate_size_border + BOT_SIZE_BACK - 40;
+    int plate = -1, score = -1;
+    bool above = false, below = false;
+    bool leave = true;
+    // Important start points.
+    if (team_color)
+    {
+        if (!plate_visited_[2])
+        {
+            plate = 2;
+            below = true;
+            score = 100000;
+            leave = false;
+        }
+        else if (!plate_visited_[0])
+        {
+            plate = 0;
+            above = true;
+            score = 100000;
+        }
+    }
+    else
+    {
+        if (!plate_visited_[0 + 5])
+        {
+            plate = 0 + 5;
+            above = true;
+            score = 100000;
+            leave = false;
+        }
+        else if (!plate_visited_[2 + 5])
+        {
+            plate = 2 + 5;
+            below = true;
+            score = 100000;
+        }
+    }
+    // One plate chosen?
+    if (plate != -1)
+    {
+        if (above)
+        {
+            pos.v.x = plate_pos[plate].x + 35;
+            pos.v.y = plate_pos[plate].y - plate_app;
+            pos.a = G_ANGLE_UF016_DEG (-90);
+            plate_decision_.loading_pos.x = plate_pos[plate].x + 35;
+            plate_decision_.loading_pos.y = plate_pos[plate].y - plate_load;
+        }
+        else if (below)
+        {
+            pos.v.x = plate_pos[plate].x - 35;
+            pos.v.y = plate_pos[plate].y + plate_app;
+            pos.a = G_ANGLE_UF016_DEG (90);
+            plate_decision_.loading_pos.x = plate_pos[plate].x - 35;
+            plate_decision_.loading_pos.y = plate_pos[plate].y + plate_load;
+        }
+        else if (plate < 5)
+        {
+            pos.v.x = plate_pos[plate].x + plate_app;
+            pos.v.y = plate_pos[plate].y + 35;
+            pos.a = G_ANGLE_UF016_DEG (0);
+            plate_decision_.loading_pos.x = plate_pos[plate].x + plate_load;
+            plate_decision_.loading_pos.y = plate_pos[plate].y + 35;
+        }
+        else
+        {
+            pos.v.x = plate_pos[plate].x - plate_app;
+            pos.v.y = plate_pos[plate].y - 35;
+            pos.a = G_ANGLE_UF016_DEG (180);
+            plate_decision_.loading_pos.x = plate_pos[plate].x - plate_load;
+            plate_decision_.loading_pos.y = plate_pos[plate].y - 35;
+        }
+        plate_decision_.approaching_pos = pos;
+        plate_decision_.plate = plate;
+        plate_decision_.leave = leave;
+    }
+    return score;
+}
+
 Strat::Decision
 Strat::decision (Position &pos)
 {
+    Decision best_decision;
+    int best_score = -1;
+    Position tpos;
+    int tscore;
+    // Plate?
+    tscore = score_plate (tpos);
+    if (tscore > best_score)
+    {
+        best_score = tscore;
+        pos = tpos;
+        best_decision = PLATE;
+    }
+    // Good score, XXX temp hack.
+    if (best_score >= 100000)
+    {
+        last_decision_ = best_decision;
+        return best_decision;
+    }
     // TODO: this is a stub.
     static int step;
-    static const int plate_app = pg_plate_size_border + BOT_SIZE_RADIUS + 20;
-    static const int plate_load = pg_plate_size_border + BOT_SIZE_BACK - 40;
-    if (step > 4)
-        step = 2;
+    if (step > 2)
+        step = 0;
     switch (step++)
     {
-    case 0:
-        pos = pg_position_deg (200, 600 + plate_app, 90);
-        pos.v.x -= 35;
-        plate_decision_.loading_pos = pg_vect (200, 600 + plate_load);
-        plate_decision_.loading_pos.x -= 35;
-        return PLATE;
     case 1:
-        pos = pg_position_deg (200, 1400 - plate_app, -90);
-        pos.v.x += 35;
-        plate_decision_.loading_pos = pg_vect (200, 1400 - plate_load);
-        plate_decision_.loading_pos.x += 35;
-        return PLATE;
-    case 3:
         gifts_decision_.go_first = true;
         gifts_decision_.begin_pos = (vect_t) { 600, pg_gifts_distance
             + BOT_SIZE_SIDE };
@@ -59,17 +174,20 @@ Strat::decision (Position &pos)
         gifts_decision_.dir = Asserv::FORWARD;
         pos.v = (vect_t) { 900, pg_gifts_distance + BOT_SIZE_SIDE };
         pos.a = 0;
+        last_decision_ = GIFTS;
         return GIFTS;
     default:
-    case 2:
+    case 0:
         pos.v = pg_cake_pos;
         pos.a = 0;
+        last_decision_ = CANDLES;
         return CANDLES;
-    case 4:
+    case 2:
         if (team_color)
             pos = pg_position_deg (1500, 1200, 90);
         else
             pos = pg_position_deg (1500 - 200, 1200, 90);
+        last_decision_ = CANNON;
         return CANNON;
     }
 }
@@ -151,5 +269,14 @@ Strat::decision_gifts (GiftsDecision &decision)
 void
 Strat::failure ()
 {
+    if (last_decision_ == PLATE)
+        plate_visited_[plate_decision_.plate] = true;
+}
+
+void
+Strat::success ()
+{
+    if (last_decision_ == PLATE)
+        plate_visited_[plate_decision_.plate] = true;
 }
 

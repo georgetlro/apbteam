@@ -307,6 +307,8 @@ ANGFSM_STATES (
             TOP_PLATE_LOADING,
             // Plate: drop plate.
             TOP_PLATE_DROPING,
+            // Plate: leaving to turn freely.
+            TOP_PLATE_LEAVE,
             // Cannon: go to fire position.
             TOP_CANNON_GOTO,
             // Cannon: Firing.
@@ -351,6 +353,7 @@ FSM_TRANS (TOP_INIT_ACTUATORS, init_done, TOP_INIT)
 {
     // Color dependent init can go here.
     robot->gifts.compute_pos ();
+    robot->strat.color_init ();
 }
 
 FSM_TRANS (TOP_INIT, init_start_round, TOP_DECISION)
@@ -519,16 +522,34 @@ FSM_TRANS (TOP_PLATE_APPROACH, move_failure, TOP_DECISION)
 
 FSM_TRANS (TOP_PLATE_APPROACH, top_plate_present, TOP_PLATE_LOADING)
 {
+    robot->strat.success ();
     robot->move.stop ();
     ANGFSM_HANDLE (AI, plate_take);
 }
 
 FSM_TRANS (TOP_PLATE_LOADING, plate_taken, TOP_PLATE_DROPING)
 {
-        ANGFSM_HANDLE (AI, plate_drop);
+    ANGFSM_HANDLE (AI, plate_drop);
 }
 
-FSM_TRANS (TOP_PLATE_DROPING, plate_droped, TOP_DECISION)
+FSM_TRANS (TOP_PLATE_DROPING, plate_droped,
+           leave, TOP_PLATE_LEAVE,
+           end, TOP_DECISION)
+{
+    if (top.plate.leave)
+    {
+        robot->move.start (top.plate.approaching_pos.v, Asserv::REVERT_OK);
+        return FSM_BRANCH (leave);
+    }
+    else
+        return FSM_BRANCH (end);
+}
+
+FSM_TRANS (TOP_PLATE_LEAVE, move_success, TOP_DECISION)
+{
+}
+
+FSM_TRANS (TOP_PLATE_LEAVE, move_failure, TOP_DECISION)
 {
 }
 

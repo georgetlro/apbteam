@@ -55,7 +55,7 @@ class Robot:
 
     def jack (self):
         if self.model.jack.state:
-            plate_pos = ((200, 1000), (3000 - 200, 1000))[
+            plate_pos = ((200, 1400), (3000 - 200, 1400))[
                     self.model.color_switch.state]
             plate = self.model.table.nearest (plate_pos, max = 1)
             if plate:

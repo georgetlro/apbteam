@@ -29,7 +29,7 @@
     Asserv::FORWARD, pg_x (650), pg_y (pg_length - BOT_FRONT_CONTACT_DIST), \
     pg_a_deg (90 + BOT_BACK_CONTACT_ANGLE_ERROR_DEG)
 /// Parameters to go away from the first wall.
-#define INIT_FIRST_WALL_AWAY (-(1000 - BOT_FRONT_CONTACT_DIST))
+#define INIT_FIRST_WALL_AWAY (-(600 - BOT_FRONT_CONTACT_DIST))
 /// Parameter to face the second wall.
 #define INIT_SECOND_WALL_ANGLE pg_a_deg (180)
 /// Parameters to push the second wall.

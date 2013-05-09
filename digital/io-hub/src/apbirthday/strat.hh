@@ -49,6 +49,13 @@ class Strat
     /// Information on a plate decision.
     struct PlateDecision
     {
+        /// Chosen plate.
+        int plate;
+        /// Leave movement after plate is taken.
+        bool leave;
+        /// Approach position, where the robot should be before starting
+        /// approaching.
+        Position approaching_pos;
         /// Loading position, point where to go backward to load the plate. If
         /// the point is reached, there is no plate.
         vect_t loading_pos;
@@ -65,7 +72,13 @@ class Strat
         /// Movement direction.
         Asserv::DirectionConsign dir;
     };
+    /// Number of plates.
+    static const int plate_nb = 10;
   public:
+    /// Constructor.
+    Strat ();
+    /// Color specific initialisation.
+    void color_init ();
     /// Return new decision and associated position.
     Decision decision (Position &pos);
     /// Take a decision related to candles, return false to give up candles.
@@ -77,11 +90,20 @@ class Strat
     void decision_gifts (GiftsDecision &decision);
     /// Report a failure to apply the previous decision.
     void failure ();
+    /// Report a success.
+    void success ();
   private:
+    /// Compute best score for a plate.
+    int score_plate (Position &pos);
+  private:
+    /// Last taken decision.
+    Decision last_decision_;
     /// Last plate decision.
     PlateDecision plate_decision_;
     /// Last gifts decision.
     GiftsDecision gifts_decision_;
+    /// Plate visited?
+    bool plate_visited_[plate_nb];
 };
 
 #endif // strat_hh
