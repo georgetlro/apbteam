@@ -59,7 +59,7 @@ int
 Strat::score_plate (Position &pos)
 {
     static const int plate_app = pg_plate_size_border + BOT_SIZE_RADIUS + 20;
-    static const int plate_load = pg_plate_size_border + BOT_SIZE_BACK - 40;
+    static const int plate_load = pg_plate_size_border + BOT_SIZE_BACK - 60;
     int plate = -1, score = -1;
     bool above = false, below = false;
     bool leave = true;
