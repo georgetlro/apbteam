@@ -8,6 +8,7 @@ apbirthday_SOURCES = main.cc robot.cc hardware.host.cc hardware.stm32.cc \
 		     potentiometer.host.cc potentiometer.stm32.cc \
 		     pressure.cc chrono.host.cc chrono.stm32.cc debounce.cc \
 		     servo.host.cc servo.stm32.cc \
+		     rgb.host.cc rgb.stm32.cc rgb.cc \
 		     radar.cc radar_2013.cc obstacles.cc path.cc path_2013.cc strat.cc \
 		     outputs.cc \
 		     top.cc init.cc move.cc candles.cc cannon.cc drinks.cc plate.cc \
@@ -46,6 +47,7 @@ clean.project:
 	rm -f usb zb_uart angfsm_gen_arm_AI.h angfsm_gen_arm_AI.arm.c
 
 obj/main.stm32f4.o: angfsm_gen_arm_AI.h
+obj/rgb.stm32.stm32f4.o: angfsm_gen_arm_AI.h
 angfsm_gen_arm_AI.arm.c: angfsm_gen_arm_AI.h
 angfsm_gen_arm_AI.h: apbirthday.host
 	./$< $(ANGFSM_OPTIONS) --ang-gen arm && mv angfsm_gen_arm_AI.c angfsm_gen_arm_AI.arm.c

@@ -115,6 +115,8 @@ FSM_TRANS (CANNON_READY, cannon_fire, CANNON_FIRING)
     // Start the blower
     Cannon::blower_on ();
     // Start RGB sensor
+    robot->rgb.calibrate_cannon_sensor ();
+    robot->rgb.start_cannon_color ();
 }
 
 FSM_TRANS_TIMEOUT (CANNON_FIRING, 1250, CANNON_READY)
@@ -122,6 +124,7 @@ FSM_TRANS_TIMEOUT (CANNON_FIRING, 1250, CANNON_READY)
     // Stop the blower
     Cannon::blower_off ();
     // Stop the RGB sensor
+    robot->rgb.stop_cannon_color ();
     robot->fsm_queue.post (FSM_EVENT (cannon_fire_ok));
 }
 

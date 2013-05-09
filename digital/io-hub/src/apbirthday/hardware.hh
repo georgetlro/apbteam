@@ -87,6 +87,7 @@ struct Hardware
         glass_upper_clamp_up, glass_upper_clamp_down,
         gift_out, gift_in,
         ballon_funny_action,
+        rgb_candle_near, rgb_candle_far, rgb_cannon,
         pneum_open;
     ucoo::Gpio
         dist0_sync, dist1_sync, dist2_sync, dist3_sync;

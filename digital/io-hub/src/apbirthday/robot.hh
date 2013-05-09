@@ -47,6 +47,7 @@
 #include "drinks.hh"
 #include "plate.hh"
 #include "cannon.hh"
+#include "rgb.hh"
 
 #include "ucoolib/base/proto/proto.hh"
 #include "ucoolib/dev/usdist/usdist.hh"
@@ -131,6 +132,8 @@ class Robot : public ucoo::Proto::Handler
     Plate plate;
     /// Cannon
     Cannon cannon;
+    /// RGB
+    Rgb rgb;
   private:
     /// FSM debug mode.
     enum FsmDebugState
@@ -167,6 +170,8 @@ class Robot : public ucoo::Proto::Handler
     int stats_cake_, stats_cake_cpt_;
     /// Pressure stats interval and counter.
     int stats_pressure_, stats_pressure_cpt_;
+    /// RGB stats interval, counter and type.
+    int stats_rgb_, stats_rgb_cpt_, stats_rgb_type_;
 };
 
 /// Global instance pointer.

@@ -66,12 +66,13 @@ Robot::Robot ()
                 hardware.adc_dist3.get_resolution () * 2040 / 3300),
       radar_ (usdist0_, usdist1_, usdist2_, usdist3_),
       candles (1),
+      rgb (&hardware.rgb_cannon, &hardware.rgb_candle_far, &hardware.rgb_candle_near),
       fsm_debug_state_ (FSM_DEBUG_RUN),
       outputs_set_ (outputs_, lengthof (outputs_)),
       stats_proto_ (0),
       stats_asserv_ (0), stats_beacon_ (0),
       stats_chrono_ (false), stats_chrono_last_s_ (-1),
-      stats_inputs_ (0), stats_usdist_ (0), stats_cake_ (0), stats_pressure_ (0)
+      stats_inputs_ (0), stats_usdist_ (0), stats_cake_ (0), stats_pressure_ (0), stats_rgb_ (0)
 {
     robot = this;
     // Fill I/O arrays.
@@ -122,6 +123,7 @@ Robot::Robot ()
     usdist1_.disable ();
     usdist2_.disable ();
     usdist3_.disable ();
+    rgb.enable ();
 }
 
 void
@@ -197,6 +199,8 @@ Robot::main_loop ()
         hardware.zb_handle ();
         // Send stats.
         proto_stats ();
+        // RGB Update Router
+        rgb.update ();
     }
 }
 
@@ -398,6 +402,14 @@ Robot::proto_handle (ucoo::Proto &proto, char cmd, const uint8_t *args, int size
         stats_pressure_cpt_ = stats_pressure_ = args[0];
         stats_proto_ = &proto;
         break;
+    case c ('R', 2):
+        // RGB stats.
+        // 1B: sensor type.
+        // 1B: stat interval.
+        stats_rgb_type_ = args[0];
+        stats_rgb_cpt_ = stats_rgb_ = args[1];
+        stats_proto_ = &proto;
+        break;
     case c ('P', 1):
         // Plate test
         // 1B:
@@ -584,6 +596,13 @@ Robot::proto_stats ()
     {
         stats_proto_->send ('F', "H", pressure.get ());
         stats_pressure_cpt_ = stats_pressure_;
+    }
+    if (stats_rgb_ && !--stats_rgb_cpt_)
+    {
+        uint16_t w, r, g, b;
+        rgb.get_colors ((Rgb::rgb_type) stats_rgb_type_, w, r, g, b);
+        stats_proto_->send ('R', "HHHH", w, r, g, b);
+        stats_rgb_cpt_ = stats_rgb_;
     }
 }
 
