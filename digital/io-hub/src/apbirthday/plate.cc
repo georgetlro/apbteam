@@ -136,7 +136,7 @@ FSM_TRANS_TIMEOUT (PLATE_TAKE_GLUE, 100, PLATE_TAKE_UPING)
     Plate::arm_up ();
 }
 
-FSM_TRANS_TIMEOUT (PLATE_TAKE_UPING, 100, PLATE_I_HAZ_PLATE)
+FSM_TRANS_TIMEOUT (PLATE_TAKE_UPING, 300, PLATE_I_HAZ_PLATE)
 {
     robot->fsm_queue.post (FSM_EVENT (plate_taken));
     robot->plate.ppp ();
