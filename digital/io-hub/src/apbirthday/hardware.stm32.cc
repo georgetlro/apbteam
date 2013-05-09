@@ -58,7 +58,7 @@ Hardware::Hardware ()
       glass_upper_clamp_up (GPIOD, 3), glass_upper_clamp_down (GPIOC, 10),
       gift_out (GPIOD, 4), gift_in (GPIOC, 11),
       ballon_funny_action (GPIOA, 10),
-      rgb_candle_near (GPIOE, 15),
+      rgb_candle_near (GPIOE, 13),
       rgb_candle_far (GPIOE, 10),
       rgb_cannon (GPIOE, 13),
       pneum_open (GPIOD, 5),
