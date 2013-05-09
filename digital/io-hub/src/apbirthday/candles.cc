@@ -274,6 +274,26 @@ FSM_TRANS (AI_CANDLE_READY, ai_candle_blow, AI_CANDLE_READY)
     {
         if (robot->candles.actual_pos[i] != -1)
         {
+            // Analyse color if needed.
+            if (robot->candles.color[robot->candles.actual_pos[i]] == Candles::UNKNOWN)
+            {
+                if (Candles::is_far (robot->candles.actual_pos[i]))
+                {
+                    enum Rgb::color c = robot->rgb.get_candle_far_color ();
+                    if (c == Rgb::RED)
+                        robot->candles.color[robot->candles.actual_pos[i]] = Candles::RED;
+                    else if (c == Rgb::BLUE)
+                        robot->candles.color[robot->candles.actual_pos[i]] = Candles::BLUE;
+                }
+                else
+                {
+                    enum Rgb::color c = robot->rgb.get_candle_near_color ();
+                    if (c == Rgb::RED)
+                        robot->candles.color[robot->candles.actual_pos[i]] = Candles::RED;
+                    else if (c == Rgb::BLUE)
+                        robot->candles.color[robot->candles.actual_pos[i]] = Candles::BLUE;
+                }
+            }
             // We can already punch if we know the color.
             if (robot->candles.state[robot->candles.actual_pos[i]] == Candles::UNPUNCHED
                     && (robot->candles.color[robot->candles.actual_pos[i]] == (Candles::Color) team_color
@@ -284,33 +304,8 @@ FSM_TRANS (AI_CANDLE_READY, ai_candle_blow, AI_CANDLE_READY)
                 else
                     FSM_HANDLE (AI, ai_candle_near_punch);
                 robot->candles.state[robot->candles.actual_pos[i]] = Candles::PUNCHED;
-                robot->candles.actual_pos[i] = -1;
             }
-            // We need to analyse color.
-            else if (robot->candles.color[robot->candles.actual_pos[i]] == Candles::UNKNOWN)
-            {
-                if (Candles::is_far (robot->candles.actual_pos[i]))
-                {
-                    enum Rgb::color c = robot->rgb.get_candle_far_color ();
-                    if (c == Rgb::RED)
-                        robot->candles.color[robot->candles.actual_pos[i]] = Candles::RED;
-                    else if (c == Rgb::BLUE)
-                        robot->candles.color[robot->candles.actual_pos[i]] = Candles::BLUE;
-                    if (robot->candles.color[robot->candles.actual_pos[i]] == (Candles::Color) team_color)
-                        FSM_HANDLE (AI, ai_candle_far_punch);
-                }
-                else
-                {
-                    enum Rgb::color c = robot->rgb.get_candle_near_color ();
-                    if (c == Rgb::RED)
-                        robot->candles.color[robot->candles.actual_pos[i]] = Candles::RED;
-                    else if (c == Rgb::BLUE)
-                        robot->candles.color[robot->candles.actual_pos[i]] = Candles::BLUE;
-                    if (robot->candles.color[robot->candles.actual_pos[i]] == (Candles::Color) team_color)
-                        FSM_HANDLE (AI, ai_candle_near_punch);
-
-                }
-            }
+            robot->candles.actual_pos[i] = -1;
         }
     }
 }
