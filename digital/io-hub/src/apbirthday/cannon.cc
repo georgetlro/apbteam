@@ -61,6 +61,7 @@ FSM_START_WITH (CANNON_TRAP_OFF)
 
 FSM_TRANS (CANNON_TRAP_OFF, init_actuators, CANNON_TRAP_BLOCK)
 {
+    robot->pot_regul.set_wiper (1, 23);
     Cannon::set_servo_pos (Cannon::BLOCK);
 }
 

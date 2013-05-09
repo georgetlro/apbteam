@@ -184,9 +184,9 @@ Strat::decision (Position &pos)
         return CANDLES;
     case 2:
         if (team_color)
-            pos = pg_position_deg (1500, 1200, 90);
+            pos = (Position) { { 1462, 1256 }, G_ANGLE_UF016_DEG (90) };
         else
-            pos = pg_position_deg (1500 - 200, 1200, 90);
+            pos = (Position) { { 1642, 1276 }, G_ANGLE_UF016_DEG (90) };
         last_decision_ = CANNON;
         return CANNON;
     }
