@@ -248,8 +248,32 @@ Robot::fsm_gen_event ()
 bool
 Robot::demo_fsm_gen_event ()
 {
+    static bool color_switch_last = true;
+    static bool robot_nb_switch_last = true;
+    static int sleep;
+    // Bounce detection.
+    if (sleep)
+    {
+        sleep--;
+        return false;
+    }
+    // Strat for candles demo mode.
     if (robot->hardware.ihm_strat.get ())
         fsm_handle_and_return (top_demo_candles);
+    // Color for candle arm.
+    if (robot->hardware.ihm_color.get () != color_switch_last)
+    {
+        color_switch_last = robot->hardware.ihm_color.get ();
+        sleep = 125;
+        fsm_handle_and_return (top_demo_candle_arm);
+    }
+    // Robot nb for plate arm.
+    if (robot->hardware.ihm_robot_nb.get () != robot_nb_switch_last)
+    {
+        robot_nb_switch_last = robot->hardware.ihm_robot_nb.get ();
+        sleep = 125;
+        fsm_handle_and_return (top_demo_plate);
+    }
     return false;
 }
 

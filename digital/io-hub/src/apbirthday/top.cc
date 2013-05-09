@@ -346,7 +346,14 @@ ANGFSM_STATES (
             // Demo mode: move away from the wall.
             TOP_DEMO_CANDLES_MOVE_AWAY,
             // Demo mode: follow the cake (or anything else actually).
-            TOP_DEMO_FOLLOW)
+            TOP_DEMO_FOLLOW,
+            // Demo mode: candle arm steps.
+            TOP_DEMO_CANDLE_ARM_DEPLOY,
+            TOP_DEMO_CANDLE_ARM_FAR,
+            TOP_DEMO_CANDLE_ARM_NEAR,
+            // Demo mode: plate arm steps.
+            TOP_DEMO_PLATE_UP,
+            TOP_DEMO_PLATE_DOWN)
 
 ANGFSM_EVENTS (
             // Cake following finished (end point reached).
@@ -359,6 +366,10 @@ ANGFSM_EVENTS (
             top_gifts_open,
             // Start candle demo.
             top_demo_candles,
+            // Start candle arm demo.
+            top_demo_candle_arm,
+            // Start plate demo.
+            top_demo_plate,
             // Start follow the cake demo.
             top_demo_follow)
 
@@ -712,5 +723,41 @@ FSM_TRANS (TOP_DEMO_FOLLOW, top_demo_follow, TOP_DEMO_FOLLOW)
 FSM_TRANS (TOP_DEMO_FOLLOW, top_follow_finished, TOP_DEMO_FOLLOW)
 {
     // Transition needed for top_update.
+}
+
+FSM_TRANS (TOP_INIT_ACTUATORS, top_demo_candle_arm, TOP_DEMO_CANDLE_ARM_DEPLOY)
+{
+    ANGFSM_HANDLE (AI, ai_candle_deploy);
+}
+
+FSM_TRANS (TOP_DEMO_CANDLE_ARM_DEPLOY, top_demo_candle_arm, TOP_DEMO_CANDLE_ARM_FAR)
+{
+    ANGFSM_HANDLE (AI, ai_candle_far_punch);
+}
+
+FSM_TRANS (TOP_DEMO_CANDLE_ARM_FAR, top_demo_candle_arm,
+           TOP_DEMO_CANDLE_ARM_NEAR)
+{
+    ANGFSM_HANDLE (AI, ai_candle_near_punch);
+}
+
+FSM_TRANS (TOP_DEMO_CANDLE_ARM_NEAR, top_demo_candle_arm, TOP_INIT_ACTUATORS)
+{
+    ANGFSM_HANDLE (AI, ai_candle_undeploy);
+}
+
+FSM_TRANS (TOP_INIT_ACTUATORS, top_demo_plate, TOP_DEMO_PLATE_UP)
+{
+    ANGFSM_HANDLE (AI, plate_take);
+}
+
+FSM_TRANS (TOP_DEMO_PLATE_UP, top_demo_plate, TOP_DEMO_PLATE_DOWN)
+{
+    ANGFSM_HANDLE (AI, plate_drop);
+}
+
+FSM_TRANS (TOP_DEMO_PLATE_DOWN, top_demo_plate, TOP_INIT_ACTUATORS)
+{
+    ANGFSM_HANDLE (AI, cannon_fire);
 }
 
