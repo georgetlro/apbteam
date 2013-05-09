@@ -204,27 +204,12 @@ Rgb::get_candle_near_color ()
 enum Rgb::color
 Rgb::get_candle_color ()
 {
-    uint32_t min_color = (uint32_t) (-1);
-    uint32_t results = NOTHING;
-    uint32_t color;
-
-    // We don't care for white level
-    for (color = WHITE; color != UNKNOWN; color++)
-    {
-        if (color == BLUE)
-            color_value_[color] *= 0.8;
-        else if (color == RED)
-            color_value_[color] *= 1.2;
-
-        if (color_value_[color] < min_color)
-        {
-            results = color;
-            min_color = color_value_[color];
-        }
-        color_value_[color] = 0;
-    }
-
-    return (enum Rgb::color) results;
+    color_value_[BLUE] *= 0.8;
+    color_value_[RED] *= 1.2;
+    if (color_value_[BLUE] < color_value_[RED])
+        return BLUE;
+    else
+        return RED;
 }
 
 void
