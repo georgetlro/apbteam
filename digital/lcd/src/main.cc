@@ -26,9 +26,23 @@
 #include "ucoolib/arch/arch.hh"
 #include "ucoolib/utils/delay.hh"
 #include <libopencm3/stm32/f4/rcc.h>
+#include <cstring>
+
 
 #include "ucoolib/hal/i2c/i2c.hh"
 #include "ucoolib/utils/crc.hh"
+#include "ucoolib/utils/bytes.hh"
+//uint16_t ucoo::bytes_pack (arg 1 ,arg 2 );
+
+
+
+static char i2c_color[3];
+static int i2c_time;
+static char i2c_cmd[100]="...";
+static Rect pos_r;//position du robot 
+static int nb_obs=0;//nb d'obstacle 
+static Rect pos_obs[4];
+static Rect pos_r_n; //next position of the robot 
 
 static const int i2c_status_size = 3;
 static const int i2c_command_size = 16;
@@ -56,14 +70,41 @@ i2c_handle (LCD &lcd, const char *buf, int size)
     char cmd = buf[2];
     const char *arg = &buf[3];
     int arg_nb = size - 3;
+    int j;
     switch (cmd)
     {
     case 'c':
         // Team color.
         if (arg_nb != 3)
             return;
-        lcd.clear (LCD::color (arg[0], arg[1], arg[2]));
+		i2c_color[0]=arg[0];
+		i2c_color[1]=arg[1];
+		i2c_color[2]=arg[2];
         break;
+    case 't':
+		i2c_time=arg[0];
+	break;
+    case 'p': //position of the robot 
+		pos_r.x=ucoo::bytes_pack (arg[0] ,arg [1] )*0.10666;
+		pos_r.y=ucoo::bytes_pack (arg[2] ,arg [3] )*0.10666;	
+	break;
+    case 'm': //message 
+		strcpy(i2c_cmd,arg);
+    case 'o': //obstacle (barrier)
+		j=0;		
+		nb_obs=arg[0];
+		for(int i=1 ; i<=nb_obs*4 ; i=i+4)
+		{
+			pos_obs[j].x=ucoo::bytes_pack (arg[i] ,arg [i+1] )*0.10666;
+
+			pos_obs[j].y=ucoo::bytes_pack (arg[i+2] ,arg [i+3] )*0.10666;
+			j++;
+		}
+	break;
+    case 'n'://next position of the robot 
+	pos_r_n.x=ucoo::bytes_pack (arg[0] ,arg [1] )*0.10666;
+	pos_r_n.y=ucoo::bytes_pack (arg[2] ,arg [3] )*0.10666;
+	break;
     default:
         // Unknown command.
         return;
@@ -89,6 +130,99 @@ i2c_poll (LCD &lcd, ucoo::I2cSlaveDataBuffer &i2c_data)
                                     sizeof (status) - 1);
     i2c_data.update (status, sizeof (status));
 }
+void 
+draw_bar (LCD lcd)//draw barrier (make a red circle where is approximatly the barrier)
+{
+	for(int i=0; i<nb_obs ;i++)
+	{
+		lcd.circle (LCD::color(255,0,0),10 ,pos_obs[i]);
+	}
+}
+
+void
+draw_robot (LCD lcd) //draw of the robot and his barriers
+{
+	Rect pos_rob;pos_rob.x=pos_r.x-12;pos_rob.y=pos_r.y-12;//center the bild of the robot 
+	Rect size;size.x=24;size.y=24; //size of the robot
+	Rect pos_rob_n;pos_rob_n.x=pos_r_n.x-2;pos_rob_n.y=pos_r_n.y-2;//center the bild of the next position of the robot 
+	Rect size_dest;size_dest.x=5;size_dest.y=5;//size of the robot next position 
+	lcd.rectangle_fill (LCD::color ( 100,100,100),size, pos_rob);
+	draw_bar(lcd);
+	lcd.rectangle_fill (LCD::color (0,255,0),size_dest ,pos_rob_n);
+	
+}
+
+
+
+void 
+draw_time (LCD lcd) //write the remaining time 
+{	
+
+		
+	Rect pos_u;pos_u.x=300;pos_u.y=223;//digit two  
+	Rect pos_d;pos_d.x=292;pos_d.y=223;//digit one 
+	char dizaine = i2c_time/10 +48;
+	char unite = i2c_time%10 +48;
+	if(i2c_time<0){lcd.draw_sentence (0,"ERROR",pos_d);}
+	else{
+	if(i2c_time/10!=0){lcd.draw_char( 0 ,dizaine,pos_d);}
+	lcd.draw_char( 0 ,unite,pos_u);}
+
+}
+void 
+draw_table (LCD lcd) //draw the table on the screen 
+{
+	Rect pos_i2c_cmd;pos_i2c_cmd.x=160;pos_i2c_cmd.y=223;
+	char commande [100]="msg: ";
+	strcat(commande, i2c_cmd);
+	Rect pos_cake;pos_cake.x=160;pos_cake.y=0; //position of the center of the cake 
+		
+	Rect pos_table; pos_table.x=43;pos_table.y=0; //position of the table on the screen
+	Rect for_table; for_table.x= 234; for_table.y=214;//size of the table 
+		
+	Rect pos_cons; pos_cons.x=0;pos_cons.y=214;//position of the console 
+	Rect for_cons; for_cons.x= 320; for_cons.y=27;//size of the console 
+	
+	Rect for_base;for_base.x=43;for_base.y=43;//size of a base 
+
+	Rect pos_base_b_a;pos_base_b_a.x=0;pos_base_b_a.y=0; //position of the 3 blue bases
+	Rect pos_base_b_b;pos_base_b_b.x=0;pos_base_b_b.y=87;
+	Rect pos_base_b_c;pos_base_b_c.x=0;pos_base_b_c.y=172;
+	
+	Rect pos_base_r_a;pos_base_r_a.x=277;pos_base_r_a.y=0;//position of the 3 red bases
+	Rect pos_base_r_b;pos_base_r_b.x=277;pos_base_r_b.y=87;
+	Rect pos_base_r_c;pos_base_r_c.x=277;pos_base_r_c.y=172;
+
+	Rect pos_base_n_a;pos_base_n_a.x=0;pos_base_n_a.y=44; //position of the 4 white bases
+	Rect pos_base_n_b;pos_base_n_b.x=0;pos_base_n_b.y=130;
+	Rect pos_base_n_c;pos_base_n_c.x=277;pos_base_n_c.y=44;
+	Rect pos_base_n_d;pos_base_n_d.x=277;pos_base_n_d.y=130;
+	
+	Rect pos_color;pos_color.x=10;pos_color.y=223;//position of the team's color rectangle
+	Rect for_color;for_color.x=10;for_color.y=10;//size of the rectangle 
+
+	lcd.rectangle_fill (LCD::color(255,255,0),for_table,pos_table);
+	
+	lcd.circle (LCD::color(255,200,255), 53 , pos_cake);//pink circle of the cake
+	lcd.rectangle_fill (0xffff , for_cons , pos_cons);//the white rectangle
+	ucoo::delay_ms (15);
+	lcd.rectangle_fill (LCD::color(0,0,255) , for_base, pos_base_b_a);
+	lcd.rectangle_fill (LCD::color(0,0,255) , for_base, pos_base_b_b);
+	lcd.rectangle_fill (LCD::color(0,0,255) , for_base, pos_base_b_c);
+
+	lcd.rectangle_fill (LCD::color(255,0,0) , for_base, pos_base_r_a);
+	lcd.rectangle_fill (LCD::color(255,0,0) , for_base, pos_base_r_b);
+	lcd.rectangle_fill (LCD::color(255,0,0) , for_base, pos_base_r_c);
+	
+	lcd.rectangle_fill (LCD::color(255,255,255) , for_base, pos_base_n_a);
+	lcd.rectangle_fill (LCD::color(255,255,255) , for_base, pos_base_n_b);
+	lcd.rectangle_fill (LCD::color(255,255,255) , for_base, pos_base_n_c);
+	lcd.rectangle_fill (LCD::color(255,255,255) , for_base, pos_base_n_d);
+
+	lcd.rectangle_fill (LCD::color(i2c_color[0],i2c_color[1],i2c_color[2]),for_color,pos_color);
+	draw_time (lcd);
+	lcd.draw_sentence (0,commande,pos_i2c_cmd);
+}
 
 int
 main (int argc, const char **argv)
@@ -104,12 +238,23 @@ main (int argc, const char **argv)
     i2c.enable ();
     ucoo::I2cSlaveDataBufferSize<i2c_status_size, i2c_command_size> i2c_data;
     i2c.register_data (0x20, i2c_data);
+    //Init global variable 
+	i2c_color[0]=0;i2c_color[1]=0;i2c_color[2]=0;
+	i2c_time=90;
+	pos_r_n.x=160;pos_r_n.y=120;
+	pos_r.x=160;pos_r.y=120;
     // Init.
+	
     LCD lcd;
+	//ucoo::delay_ms (1000);
+	draw_table (lcd);
     // Wait orders.
     while (1)
     {
+	draw_table (lcd);//draw the table 
+	draw_robot (lcd);//draw the robot and his destination on the table 
         i2c_poll (lcd, i2c_data);
-        ucoo::delay_ms (1);
+        ucoo::delay_ms (1000);
+	
     }
 }

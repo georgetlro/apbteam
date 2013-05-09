@@ -27,6 +27,13 @@
 #include "ucoolib/hal/gpio/gpio.hh"
 
 /// Control LCD.
+
+struct Rect
+{
+	int x;
+	int y;
+};
+
 class LCD
 {
   public:
@@ -47,6 +54,18 @@ class LCD
     {
         return (r >> 3 << 11) | (g >> 2 << 5) | (b >> 3);
     }
+    ///draw a pixel if he belong to the screen
+    void blit_pixel ( uint16_t color , int x , int y);
+    ///make a border of a rectangle 
+    void rectangle_empty (uint16_t color,Rect format, Rect pos);
+    ///make a filled rectangle with one color 
+    void rectangle_fill (uint16_t color,Rect format, Rect pos);
+    ///draw a circle 
+    void circle ( uint16_t color , int radius , Rect pos); //position of the center of the circle 
+    ///write a caracter 
+    void draw_char( uint16_t color ,char caract, Rect pos); 
+    ///write a sentence center on pos 
+    void draw_sentence( uint16_t color ,const char *sentence, Rect pos);
   private:
     void set_cursor (int x, int y);
     void write_index (uint16_t index);
@@ -54,8 +73,8 @@ class LCD
     uint16_t read_data ();
     void write_reg (uint16_t index, uint16_t data);
     uint16_t read_reg (uint16_t index);
+    int belong ( int x, int y); //does the point belong to the screen?
   private:
     ucoo::Gpio cs_, rs_, wr_, rd_, reset_, bl_;
 };
-
 #endif // lcd_hh

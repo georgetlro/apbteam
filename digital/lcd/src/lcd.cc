@@ -23,6 +23,8 @@
 // }}}
 #include "lcd.hh"
 #include "ucoolib/utils/delay.hh"
+#include "font.hh"
+
 
 LCD::LCD ()
     : cs_ (GPIOB, 10), rs_ (GPIOB, 11), wr_ (GPIOC, 9), rd_ (GPIOC, 6),
@@ -221,4 +223,176 @@ LCD::read_reg (uint16_t index)
     cs_.set ();
     return data;
 }
+void 
+LCD::rectangle_fill (uint16_t color,Rect format, Rect pos)//make a filled rectangle 
+{
+	set_cursor(pos.x , pos.y);
+	if(format.x+pos.x> x_max){format.x=x_max-pos.x;}
+	if(format.y+pos.y> y_max){format.y=y_max-pos.y;}
+	if(format.x>=0 && format.y >=0)
+	{	
+	for(int i=0 ; i<format.y ; i++)
+	{
+		cs_.reset();
+		write_index (0x0022);
+		for(int j=0 ; j<format.x ; j++)
+		{
+			write_data(color);
+		}
+		cs_.set();
+	pos.y++;
+	set_cursor(pos.x , pos.y);
+	}
+	}
+	
+}
+void
+LCD::rectangle_empty (uint16_t color,Rect format, Rect pos) //make the border of the rectangle 
+{//to make the code better: " use a window HSA in the datasheet"
+	Rect format_line;
+	format_line.x=1;
+	format_line.y=format.y;
+
+	set_cursor(pos.x,pos.y);
+	cs_.reset();
+	write_index (0x0022);
+	for(int j=0 ; j<format.x ; j++)
+	{
+		write_data(color);
+	}
+	cs_.set();
+	rectangle_fill( color , format_line , pos);
+	
+	pos.x += format.x;
+	rectangle_fill( color , format_line , pos);
+	pos.y += format.y;
+	pos.x -= format.x;
+
+	set_cursor(pos.x,pos.y);
+	
+	cs_.reset();
+	write_index (0x0022);
+	for(int j=0 ; j<format.x ; j++)
+	{
+		write_data(color);
+	}
+	cs_.set();
+	
+}
+void
+LCD::blit_pixel ( uint16_t color , int x , int y)//blit a pixel if he is on the screen 
+{
+	if(x<0 || x>x_max ||y<0 || y>y_max){return;}	
+	set_cursor(x,y);
+	cs_.reset();
+	write_index (0x0022);
+	write_data(color);
+	cs_.set();
+}
+
+void 
+LCD::circle ( uint16_t color , int radius , Rect pos) //draw a circle (no problem if a part of the circle is not on the screen)
+{
+	int x=0;
+	int y=radius;
+	int m=5-4*radius;
+	while(x<=y)
+	{
+		if(belong (x+pos.x , y+pos.y))		
+		{blit_pixel(color , x+pos.x , y+pos.y);}
+		
+		if(belong ( y+pos.x , x+pos.y))
+		{blit_pixel(color , y+pos.x , x+pos.y);}
+
+		if(belong (-x+pos.x , y+pos.y))
+		{blit_pixel(color , -x+pos.x , y+pos.y);}
+
+		if(belong (-y+pos.x , x+pos.y))
+		{blit_pixel(color , -y+pos.x , x+pos.y);}
+
+		if(belong (x+pos.x , -y+pos.y))
+		{blit_pixel(color , x+pos.x , -y+pos.y);}
+
+		if(belong ( y+pos.x , -x+pos.y))
+		{blit_pixel(color , y+pos.x , -x+pos.y);}
+
+		if(belong (-x+pos.x , -y+pos.y))
+		{blit_pixel(color , -x+pos.x , -y+pos.y);}
+
+		if(belong (-y+pos.x , -x+pos.y))
+		{blit_pixel(color , -y+pos.x , -x+pos.y);}
+	
+		if(m > 0)
+		{
+			y=y-1;
+			m = m-8*y;
+		}
+		x=x+1;
+		m=m+8*x+4;
+	}
+}
+int 
+LCD::belong (int x , int y) //test if the point A(x,y) belong to the screen 
+{
+	if(0<=x && x<=x_max && 0<=y && y<=y_max)
+	{return 1;}
+	return 0;
+}
+void 
+LCD::draw_char( uint16_t color ,char caract, Rect pos)//draw a caracter
+{
+	if(pos.x+8> x_max || pos.y+16>y_max){return;}
+	caract =caract-32;
+	for( int i = 0 ; i<=16 ; i++)
+	{
+		for( int j =7 ; j>=0 ; j--)
+		{
+			if(Ascii[caract][i]&(1<<j)){blit_pixel(color,8-j+pos.x,i+pos.y);}
+		}
+	}
+}
+void
+LCD::draw_sentence( uint16_t color ,const char *sentence, Rect pos) //write a sentence center on pos 
+{
+	char car_act='A'; //carat actuel
+	int i=0;
+	car_act =sentence[i];	
+	while(car_act!='\0')
+	{
+		i++;
+		car_act =sentence[i];
+	}
+	pos.x=pos.x-4*i;
+	i=0;
+	car_act =sentence[i];	
+	while(car_act!='\0')
+	{
+		draw_char (color ,car_act,pos);
+		pos.x=pos.x+8;
+		i++;
+		car_act =sentence[i];
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
