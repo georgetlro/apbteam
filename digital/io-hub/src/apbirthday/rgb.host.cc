@@ -71,7 +71,7 @@ Rgb::get_candle_near_color ()
 enum Rgb::color
 Rgb::get_candle_color ()
 {
-    return WHITE;
+    return RED;
 }
 
 void
