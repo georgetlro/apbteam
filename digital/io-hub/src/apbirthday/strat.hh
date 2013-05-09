@@ -98,6 +98,8 @@ class Strat
   private:
     /// Last taken decision.
     Decision last_decision_;
+    /// Number of candles tries.
+    int candles_tries_;
     /// Last plate decision.
     PlateDecision plate_decision_;
     /// Last gifts decision.

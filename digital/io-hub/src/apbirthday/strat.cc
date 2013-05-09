@@ -181,6 +181,7 @@ Strat::decision (Position &pos)
         pos.v = pg_cake_pos;
         pos.a = 0;
         last_decision_ = CANDLES;
+        candles_tries_ = 0;
         return CANDLES;
     case 2:
         if (team_color)
@@ -211,6 +212,9 @@ strat_candles_score (int first, int last)
 bool
 Strat::decision_candles (CandlesDecision &decision, uint16_t robot_angle)
 {
+    if (candles_tries_ > 5)
+        return false;
+    candles_tries_++;
     // Make an evaluation of the best direction to follow.
     // TODO: +1/-1 until candles at ends can be reached.
     int limit, score_forward, score_backward;
