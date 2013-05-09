@@ -139,7 +139,6 @@ Robot::main_loop ()
         if (!ended && chrono.remaining_time_ms () < 1000)
         {
             ended = true;
-            hardware.ballon_funny_action.set ();
             asserv.stop ();
             robot->beacon.on (false);
         }
@@ -148,6 +147,7 @@ Robot::main_loop ()
             stop_done = true;
             asserv.free ();
             pot_regul.set_wiper (0, 0);
+            hardware.ballon_funny_action.set ();
         }
         else if (ended && !funny_done && chrono.remaining_time_ms () < -10000)
         {
