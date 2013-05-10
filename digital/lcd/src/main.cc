@@ -62,10 +62,7 @@ i2c_handle (LCD &lcd, const char *buf, int size)
     if (ucoo::crc8_compute ((const uint8_t *) buf + 1, size - 1) != buf[0])
         return;
     // Handle sequence number.
-    if (buf[1] == 0)
-        // Transient command, not handled for the moment.
-        return;
-    if (buf[1] == i2c_seq)
+    if (buf[1] != 0 && buf[1] == i2c_seq)
         // Duplicated command.
         return;
     // OK, now handle command.
@@ -129,7 +126,8 @@ i2c_handle (LCD &lcd, const char *buf, int size)
     }
     i2c_received = true;
     // Acknowledge.
-    i2c_seq = buf[1];
+    if (buf[1] != 0)
+        i2c_seq = buf[1];
 }
 
 /// Poll I2C interface for commands and update status.
