@@ -35,11 +35,6 @@ class Cannon
             POS1 = 0x1290,
             POS2 = 0x0a00
         };
-        enum StateRouter
-        {
-            OPEN,
-            CLOSE
-        };
         // GPIO manipulation.
         static void blower_off ();
         static void blower_on (int speed);
