@@ -42,6 +42,8 @@ class Obstacles
     void update ();
     /// Add an obstacle detection.
     void add (const vect_t &pos);
+    /// Add an obstacle detection, to specific slot.
+    void add (const vect_t &pos, int slot);
     /// Return true if there is an obstacle near the robot while going to a
     /// destination point.
     bool blocking (const vect_t &robot, const vect_t &dest, int stop_mm_ = -1)

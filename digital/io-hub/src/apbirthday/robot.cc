@@ -184,7 +184,7 @@ Robot::main_loop ()
                 vect_t pos;
                 int trust = beacon.get_position (i, pos);
                 if (trust > 70)
-                    obstacles.add (pos);
+                    obstacles.add (pos, i);
             }
             if (usdist_control_.update ())
             {

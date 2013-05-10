@@ -104,6 +104,14 @@ Obstacles::add (const vect_t &pos)
     changed_ = true;
 }
 
+void
+Obstacles::add (const vect_t &pos, int slot)
+{
+    obstacles_[slot].pos = pos;
+    obstacles_[slot].valid = valid_new_;
+    changed_ = true;
+}
+
 bool
 Obstacles::blocking (const vect_t &robot, const vect_t &dest, int stop_mm_) const
 {
