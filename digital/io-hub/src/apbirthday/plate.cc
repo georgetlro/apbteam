@@ -31,21 +31,6 @@ Plate::Plate ()
     is_up = 0;
 }
 
-inline int Plate::get_plate_nb ()
-{
-    return nb_plate;
-}
-
-inline void Plate::reset_plate_nb ()
-{
-    nb_plate = 0;
-}
-
-inline void Plate::ppp ()
-{
-    nb_plate++;
-}
-
 inline void Plate::arm_down ()
 {
     robot->hardware.cherry_plate_down.set (true);

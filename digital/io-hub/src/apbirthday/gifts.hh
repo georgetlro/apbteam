@@ -38,8 +38,9 @@ class Gifts
     /// Update gifts positions according to team color.
     void compute_pos ()
     {
+        int sign = team_color ? -1 : 1;
         for (int i = 0; i < nb; i++)
-            x[i] = pg_x (600 * (i + 1) - pg_gift_width / 2);
+            x[i] = 600 * (i + 1) + sign *  pg_gift_width / 2;
     }
   public:
     /// Number of gifts.

@@ -44,4 +44,19 @@ class Plate
         int nb_plate;
 };
 
+inline int Plate::get_plate_nb ()
+{
+    return nb_plate;
+}
+
+inline void Plate::reset_plate_nb ()
+{
+    nb_plate = 0;
+}
+
+inline void Plate::ppp ()
+{
+    nb_plate++;
+}
+
 #endif // plate_hh

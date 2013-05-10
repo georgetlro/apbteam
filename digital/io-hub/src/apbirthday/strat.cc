@@ -40,10 +40,11 @@ static const vect_t plate_pos[Strat::plate_nb] = {
     { 3000 - 200, 250 },
 };
 
+static const int plate_app = pg_plate_size_border + BOT_SIZE_RADIUS + 20;
+static const int plate_load = pg_plate_size_border + BOT_SIZE_BACK - 60;
+
 Strat::Strat ()
 {
-    for (int i = 0; i < plate_nb; i++)
-        plate_visited_[i] = false;
 }
 
 void
@@ -52,14 +53,94 @@ Strat::color_init ()
     if (team_color)
         plate_visited_[1] = false;
     else
+    {
         plate_visited_[5 + 1] = false;
+        // TODO: plate out of reach.
+        plate_visited_[0] = true;
+        // TODO: this gift is out of reach.
+        robot->gifts.open[3] = true;
+    }
+    // TODO: plate out of reach.
+    plate_visited_[9] = true;
+    // Pre-computed positions.
+    pos_[POS_CANDLES] = pg_cake_pos;
+    for (int i = 0; i < plate_nb; i++)
+    {
+        plate_visited_[i] = false;
+        int sign = i < 5 ? 1 : -1;
+        pos_[POS_PLATE_FIRST + i].x = plate_pos[i].x + sign * plate_app;
+        pos_[POS_PLATE_FIRST + i].y = plate_pos[i].y + sign * 35;
+    }
+    if (team_color)
+    {
+        pos_[POS_CANNON].x = 1462;
+        pos_[POS_CANNON].y = 1256;
+    }
+    else
+    {
+        pos_[POS_CANNON].x = 1642;
+        pos_[POS_CANNON].y = 1276;
+    }
+    pos_[POS_GIFT_1].x = 900;
+    pos_[POS_GIFT_1].y = pg_gifts_distance + BOT_SIZE_SIDE;
+    pos_[POS_GIFT_2].x = 1500;
+    pos_[POS_GIFT_2].y = pg_gifts_distance + BOT_SIZE_SIDE;
+    pos_[POS_GIFT_3].x = 2100;
+    pos_[POS_GIFT_3].y = pg_gifts_distance + BOT_SIZE_SIDE;
+}
+
+void
+Strat::score_pos ()
+{
+    bool escape = false;
+    Position current_pos = robot->asserv.get_position ();
+    robot->path.reset ();
+    robot->obstacles.add_obstacles (robot->path);
+    robot->path.endpoints (current_pos.v, current_pos.v);
+    robot->path.prepare_score (current_pos.v);
+    for (int i = 0; i < POS_NB; i++)
+    {
+        robot->path.endpoints (current_pos.v, pos_[i]);
+        pos_score_[i] = (int16_t) robot->path.get_score (pos_[i]);
+        if (pos_score_[i] == -1)
+            escape = true;
+    }
+    if (escape)
+    {
+        robot->path.prepare_score (current_pos.v, 8);
+        for (int i = 0; i < POS_NB; i++)
+        {
+            if (pos_score_[i] == -1)
+            {
+                robot->path.endpoints (current_pos.v, pos_[i]);
+                pos_score_[i] = (int16_t) robot->path.get_score (pos_[i]);
+            }
+        }
+    }
+}
+
+int
+Strat::score_candles (Position &pos)
+{
+    if (pos_score_[POS_CANDLES] == -1)
+        return -1;
+    // TODO: +1/-1 until candles at ends can be reached.
+    int candles = candles_score (0 + 1, 7 - 1)
+        + candles_score (8 + 1, 19 - 1);
+    if (!candles)
+        return -1;
+    int score = 1000 * candles + 10000 - pos_score_[POS_CANDLES];
+#ifdef TARGET_host
+    robot->hardware.simu_report.draw_number (pg_cake_pos, score);
+#endif
+    pos.v = pg_cake_pos;
+    pos.a = 0;
+    return score;
 }
 
 int
 Strat::score_plate (Position &pos)
 {
-    static const int plate_app = pg_plate_size_border + BOT_SIZE_RADIUS + 20;
-    static const int plate_load = pg_plate_size_border + BOT_SIZE_BACK - 60;
     int plate = -1, score = -1;
     bool above = false, below = false;
     bool leave = true;
@@ -94,6 +175,31 @@ Strat::score_plate (Position &pos)
             plate = 2 + 5;
             below = true;
             score = 100000;
+        }
+    }
+#ifdef TARGET_host
+    if (plate != -1)
+        robot->hardware.simu_report.draw_number (plate_pos[plate], score);
+#endif
+    if (plate == -1 && robot->plate.get_plate_nb () < 2)
+    {
+        for (int i = 0; i < plate_nb; i++)
+        {
+            if (plate_visited_[i] || pos_score_[i] == -1)
+                continue;
+            int tscore = 10000 - pos_score_[i];
+            // Prefer our side.
+            if ((team_color && i >= 5)
+                || (!team_color && i < 5))
+                tscore -= 1500;
+#ifdef TARGET_host
+            robot->hardware.simu_report.draw_number (plate_pos[i], tscore);
+#endif
+            if (tscore > score)
+            {
+                plate = i;
+                score = tscore;
+            }
         }
     }
     // One plate chosen?
@@ -138,6 +244,86 @@ Strat::score_plate (Position &pos)
     return score;
 }
 
+int
+Strat::score_cannon (Position &pos)
+{
+    if (pos_score_[POS_CANNON] == -1)
+        return -1;
+    if (!robot->plate.get_plate_nb ())
+        return -1;
+    pos.v = pos_[POS_CANNON];
+    pos.a = G_ANGLE_UF016_DEG (90);
+    int score = 1000 * robot->plate.get_plate_nb ()
+        + 10000 - pos_score_[POS_CANNON];
+#ifdef TARGET_host
+    robot->hardware.simu_report.draw_number (pos.v, score);
+#endif
+    return score;
+}
+
+int
+Strat::score_gifts_sub (Position &pos, int gift_min, int gift_max,
+                        int best_score)
+{
+    // Find first and last gifts.
+    int min = -1, max = -1, nb = 0;
+    for (int i = gift_min; i <= gift_max; i++)
+    {
+        if (!robot->gifts.open[i])
+        {
+            if (min == -1) min = i;
+            max = i;
+            nb++;
+        }
+    }
+    if (!nb)
+        return best_score;
+    // Compute positions.
+    int p;
+    if (min <= 1) p = POS_GIFT_1;
+    else if (min == 2) p = POS_GIFT_2;
+    else p = POS_GIFT_3;
+    // Compute score.
+    if (pos_score_[p] == -1)
+        return best_score;
+    int score = 10000 - pos_score_[p] + nb * 1000;
+#ifdef TARGET_host
+    robot->hardware.simu_report.draw_number
+        ((vect_t) { robot->gifts.x[gift_min], pg_gifts_distance }, score);
+#endif
+    // Update if better.
+    if (score > best_score)
+    {
+        pos.v = pos_[p];
+        pos.a = 0;
+        if (min == 0)
+        {
+            gifts_decision_.go_first = true;
+            gifts_decision_.begin_pos.x = robot->gifts.x[0]
+                - bot_gift_arm_x;
+            gifts_decision_.begin_pos.y = pg_gifts_distance + BOT_SIZE_SIDE;
+        }
+        else
+        {
+            gifts_decision_.go_first = false;
+        }
+        gifts_decision_.end_pos.x = robot->gifts.x[max] - bot_gift_arm_x;
+        gifts_decision_.end_pos.y = pg_gifts_distance + BOT_SIZE_SIDE;
+        return score;
+    }
+    else
+        return best_score;
+}
+
+int
+Strat::score_gifts (Position &pos)
+{
+    int best_score = -1;
+    for (int i = 0; i < Gifts::nb; i++)
+        best_score = score_gifts_sub (pos, i, Gifts::nb - 1, best_score);
+    return best_score;
+}
+
 Strat::Decision
 Strat::decision (Position &pos)
 {
@@ -145,6 +331,10 @@ Strat::decision (Position &pos)
     int best_score = -1;
     Position tpos;
     int tscore;
+    score_pos ();
+#ifdef TARGET_host
+    robot->hardware.simu_report.draw_start ();
+#endif
     // Plate?
     tscore = score_plate (tpos);
     if (tscore > best_score)
@@ -153,49 +343,45 @@ Strat::decision (Position &pos)
         pos = tpos;
         best_decision = PLATE;
     }
-    // Good score, XXX temp hack.
-    if (best_score >= 100000)
+    // Cannon?
+    tscore = score_cannon (tpos);
+    if (tscore > best_score)
+    {
+        best_score = tscore;
+        pos = tpos;
+        best_decision = CANNON;
+    }
+    // Candles?
+    tscore = score_candles (tpos);
+    if (tscore > best_score)
+    {
+        best_score = tscore;
+        pos = tpos;
+        best_decision = CANDLES;
+    }
+    // Gifts?
+    tscore = score_gifts (tpos);
+    if (tscore > best_score)
+    {
+        best_score = tscore;
+        pos = tpos;
+        best_decision = GIFTS;
+    }
+#ifdef TARGET_host
+    robot->hardware.simu_report.draw_send ();
+#endif
+    // Good score.
+    if (best_score > 0)
     {
         last_decision_ = best_decision;
         return best_decision;
     }
-    // TODO: this is a stub.
-    static int step;
-    if (step > 2)
-        step = 0;
-    switch (step++)
-    {
-    case 1:
-        gifts_decision_.go_first = true;
-        gifts_decision_.begin_pos = (vect_t) { 600, pg_gifts_distance
-            + BOT_SIZE_SIDE };
-        gifts_decision_.end_pos = (vect_t) { 2400, pg_gifts_distance
-            + BOT_SIZE_SIDE };
-        gifts_decision_.dir = Asserv::FORWARD;
-        pos.v = (vect_t) { 900, pg_gifts_distance + BOT_SIZE_SIDE };
-        pos.a = 0;
-        last_decision_ = GIFTS;
-        return GIFTS;
-    default:
-    case 0:
-        pos.v = pg_cake_pos;
-        pos.a = 0;
-        last_decision_ = CANDLES;
-        candles_tries_ = 0;
-        return CANDLES;
-    case 2:
-        if (team_color)
-            pos = (Position) { { 1462, 1256 }, G_ANGLE_UF016_DEG (90) };
-        else
-            pos = (Position) { { 1642, 1276 }, G_ANGLE_UF016_DEG (90) };
-        last_decision_ = CANNON;
-        return CANNON;
-    }
+    else
+        return WAIT;
 }
 
-/// Compute score for candles between first and last.
-static int
-strat_candles_score (int first, int last)
+int
+Strat::candles_score (int first, int last)
 {
     int score = 0;
     Candles::Color other_color = team_color == TEAM_COLOR_RIGHT
@@ -219,11 +405,11 @@ Strat::decision_candles (CandlesDecision &decision, uint16_t robot_angle)
     // TODO: +1/-1 until candles at ends can be reached.
     int limit, score_forward, score_backward;
     limit = top_candle_for_angle (robot_angle, Candles::FAR, 1);
-    score_backward = strat_candles_score (0 + 1, limit);
-    score_forward = strat_candles_score (limit + 1, 7 - 1);
+    score_backward = candles_score (0 + 1, limit);
+    score_forward = candles_score (limit + 1, 7 - 1);
     limit = top_candle_for_angle (robot_angle, Candles::NEAR, 1);
-    score_backward += strat_candles_score (8 + 1, limit);
-    score_forward += strat_candles_score (limit + 1, 19 - 1);
+    score_backward += candles_score (8 + 1, limit);
+    score_forward += candles_score (limit + 1, 19 - 1);
     // Can not choose a direction with an obstacle.
     if (score_backward && top_follow_blocking (-1))
         score_backward = 0;
@@ -282,5 +468,7 @@ Strat::success ()
 {
     if (last_decision_ == PLATE)
         plate_visited_[plate_decision_.plate] = true;
+    else if (last_decision_ == CANNON)
+        robot->plate.reset_plate_nb ();
 }
 

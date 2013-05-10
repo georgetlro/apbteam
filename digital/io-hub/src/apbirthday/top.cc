@@ -309,6 +309,8 @@ ANGFSM_STATES (
             TOP_INIT,
             // Decision state, one stop, one cycle.
             TOP_DECISION,
+            // No decision taken, wait and see.
+            TOP_DECISION_WAIT,
             // Candles: go to cake, with a normal move.
             TOP_CANDLES_GOTO_NORMAL,
             // Candles: deploy arm.
@@ -416,6 +418,7 @@ FSM_TRANS_TIMEOUT (TOP_DECISION, 1,
                    plate, TOP_PLATE_GOTO,
                    cannon, TOP_CANNON_GOTO,
                    gifts, TOP_GIFTS_GOTO,
+                   wait, TOP_DECISION_WAIT,
                    none, TOP_START)
 {
     if (robot->demo)
@@ -441,8 +444,12 @@ FSM_TRANS_TIMEOUT (TOP_DECISION, 1,
         robot->move.start (d_pos, Asserv::REVERT_OK);
         return FSM_BRANCH (gifts);
     default:
-        ucoo::assert_unreachable ();
+        return FSM_BRANCH (wait);
     }
+}
+
+FSM_TRANS_TIMEOUT (TOP_DECISION_WAIT, 250, TOP_DECISION)
+{
 }
 
 ///
@@ -627,10 +634,12 @@ FSM_TRANS (TOP_CANNON_GOTO, move_success, TOP_CANNON_FIRING)
 
 FSM_TRANS (TOP_CANNON_GOTO, move_failure, TOP_DECISION)
 {
+    robot->strat.failure ();
 }
 
 FSM_TRANS (TOP_CANNON_FIRING, cannon_fire_ok, TOP_DECISION)
 {
+    robot->strat.success ();
 }
 
 ///

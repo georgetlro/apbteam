@@ -37,6 +37,7 @@ class Strat
         PLATE,
         CANNON,
         GIFTS,
+        WAIT,
     };
     /// Information on a candle decision.
     struct CandlesDecision
@@ -93,9 +94,37 @@ class Strat
     /// Report a success.
     void success ();
   private:
+    /// Pre-compute positions scores.
+    void score_pos ();
+    /// Compute best score for candles.
+    int score_candles (Position &pos);
     /// Compute best score for a plate.
     int score_plate (Position &pos);
+    /// Compute score for cannon firing.
+    int score_cannon (Position &pos);
+    /// Compute score for a gifts serie.
+    int score_gifts_sub (Position &pos, int gift_min, int gift_max,
+                         int best_score);
+    /// Compute score for gifts.
+    int score_gifts (Position &pos);
+    /// Compute score for candles between first and last.
+    int candles_score (int first, int last);
   private:
+    /// Pre-computed destinations.
+    enum {
+        POS_CANDLES = 0,
+        POS_PLATE_FIRST = 1,
+        POS_PLATE_LAST = 10,
+        POS_CANNON = 11,
+        POS_GIFT_1 = 12,
+        POS_GIFT_2 = 13,
+        POS_GIFT_3 = 14,
+        POS_NB = 15,
+    };
+    /// Position of pre-computed destinations.
+    vect_t pos_[POS_NB];
+    /// Score of pre-computed destinations.
+    int pos_score_[POS_NB];
     /// Last taken decision.
     Decision last_decision_;
     /// Number of candles tries.
