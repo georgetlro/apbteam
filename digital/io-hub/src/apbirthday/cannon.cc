@@ -121,7 +121,7 @@ FSM_TRANS (CANNON_READY, cannon_fire, CANNON_FIRING)
     robot->rgb.start_cannon_color ();
 }
 
-FSM_TRANS_TIMEOUT (CANNON_FIRING, 1250, CANNON_READY)
+FSM_TRANS_TIMEOUT (CANNON_FIRING, 2500, CANNON_READY)
 {
     // Stop the blower
     Cannon::blower_off ();
