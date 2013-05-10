@@ -32,7 +32,7 @@ class Cannon
         enum ServoPos
         {
             BLOCK = 0x0800,
-            POS1 = 0x1380,
+            POS1 = 0x1290,
             POS2 = 0x0a00
         };
         enum StateRouter
