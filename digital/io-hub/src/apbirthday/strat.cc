@@ -45,6 +45,9 @@ static const int plate_load = pg_plate_size_border + BOT_SIZE_BACK - 60;
 
 Strat::Strat ()
 {
+    for (int i = 0; i < WAIT; i++)
+        chrono_last_decision_[i] = -1;
+    last_decision_ = WAIT;
 }
 
 void
@@ -129,7 +132,8 @@ Strat::score_candles (Position &pos)
         + candles_score (8 + 1, 19 - 1);
     if (!candles)
         return -1;
-    int score = 1000 * candles + 10000 - pos_score_[POS_CANDLES];
+    int score = 1000 * candles + score_offset_ - pos_score_[POS_CANDLES]
+        - chrono_malus (CANDLES);
 #ifdef TARGET_host
     robot->hardware.simu_report.draw_number (pg_cake_pos, score);
 #endif
@@ -187,7 +191,7 @@ Strat::score_plate (Position &pos)
         {
             if (plate_visited_[i] || pos_score_[i] == -1)
                 continue;
-            int tscore = 10000 - pos_score_[i];
+            int tscore = score_offset_ - pos_score_[i];
             // Prefer our side.
             if ((team_color && i >= 5)
                 || (!team_color && i < 5))
@@ -254,7 +258,8 @@ Strat::score_cannon (Position &pos)
     pos.v = pos_[POS_CANNON];
     pos.a = G_ANGLE_UF016_DEG (90);
     int score = 1000 * robot->plate.get_plate_nb ()
-        + 10000 - pos_score_[POS_CANNON];
+        + score_offset_ - pos_score_[POS_CANNON]
+        - chrono_malus (CANNON);
 #ifdef TARGET_host
     robot->hardware.simu_report.draw_number (pos.v, score);
 #endif
@@ -286,7 +291,8 @@ Strat::score_gifts_sub (Position &pos, int gift_min, int gift_max,
     // Compute score.
     if (pos_score_[p] == -1)
         return best_score;
-    int score = 10000 - pos_score_[p] + nb * 1000;
+    int score = score_offset_ - pos_score_[p] + nb * 1000
+        - chrono_malus (GIFTS);
 #ifdef TARGET_host
     robot->hardware.simu_report.draw_number
         ((vect_t) { robot->gifts.x[gift_min], pg_gifts_distance }, score);
@@ -335,6 +341,10 @@ Strat::decision (Position &pos)
 #ifdef TARGET_host
     robot->hardware.simu_report.draw_start ();
 #endif
+    // Avoid to take the same decision.
+    if (last_decision_ != WAIT)
+        chrono_last_decision_[last_decision_] =
+            robot->chrono.remaining_time_ms ();
     // Plate?
     tscore = score_plate (tpos);
     if (tscore > best_score)
@@ -378,6 +388,24 @@ Strat::decision (Position &pos)
     }
     else
         return WAIT;
+}
+
+int
+Strat::chrono_malus (Decision decision)
+{
+    int last = chrono_last_decision_[decision];
+    if (last == -1)
+        return 0;
+    int now = robot->chrono.remaining_time_ms ();
+    int diff = last - now;
+    if (diff < 4000)
+    {
+        return (4000 - diff) * 5;
+    }
+    else
+    {
+        return 0;
+    }
 }
 
 int

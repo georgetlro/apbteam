@@ -107,6 +107,8 @@ class Strat
                          int best_score);
     /// Compute score for gifts.
     int score_gifts (Position &pos);
+    /// Give malus for decision which was done lastly.
+    int chrono_malus (Decision decision);
     /// Compute score for candles between first and last.
     int candles_score (int first, int last);
   private:
@@ -121,12 +123,16 @@ class Strat
         POS_GIFT_3 = 14,
         POS_NB = 15,
     };
+    /// Score offset for any score.
+    static const int score_offset_ = 30000;
     /// Position of pre-computed destinations.
     vect_t pos_[POS_NB];
     /// Score of pre-computed destinations.
     int pos_score_[POS_NB];
     /// Last taken decision.
     Decision last_decision_;
+    /// Chrono when a decision was last taken.
+    int chrono_last_decision_[WAIT];
     /// Number of candles tries.
     int candles_tries_;
     /// Last plate decision.
