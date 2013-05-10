@@ -32,14 +32,25 @@ class SimuReport
   public:
     /// Constructor.
     SimuReport (ucoo::Host &host);
+    /// Destructor.
+    ~SimuReport ();
     /// Report positions.
     void pos (vect_t *pos, int pos_nb, uint8_t id);
     /// Report path.
     void path (const vect_t *pos, int pos_nb);
+    /// Debug draw.
+    void draw_start ();
+    void draw_send ();
+    void draw_circle (const vect_t &p, int radius, uint8_t color);
+    void draw_segment (const vect_t &p1, const vect_t &p2, uint8_t color);
+    void draw_point (const vect_t &p, uint8_t color);
+    void draw_number (const vect_t &p, int number);
   private:
     ucoo::mex::Node &node_;
     ucoo::mex::mtype_t pos_mtype_;
     ucoo::mex::mtype_t path_mtype_;
+    ucoo::mex::mtype_t draw_mtype_;
+    ucoo::mex::Msg *draw_msg_;
 };
 
 #endif // simu_report_host_hh

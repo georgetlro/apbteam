@@ -24,11 +24,17 @@
 #include "simu_report.host.hh"
 
 SimuReport::SimuReport (ucoo::Host &host)
-    : node_ (host.get_node ())
+    : node_ (host.get_node ()), draw_msg_ (0)
 {
     std::string instance (host.get_instance ());
     pos_mtype_ = node_.reserve (instance + ":pos-report");
     path_mtype_ = node_.reserve (instance + ":path");
+    draw_mtype_ = node_.reserve (instance + ":debug-draw");
+}
+
+SimuReport::~SimuReport ()
+{
+    delete draw_msg_;
 }
 
 void
@@ -48,5 +54,45 @@ SimuReport::path (const vect_t *pos, int pos_nb)
     for (; pos_nb; pos++, pos_nb--)
         msg.push ("hh") << pos->x << pos->y;
     node_.send (msg);
+}
+
+void
+SimuReport::draw_start ()
+{
+    ucoo::assert (!draw_msg_);
+    draw_msg_ = new ucoo::mex::Msg (draw_mtype_);
+}
+
+void
+SimuReport::draw_send ()
+{
+    node_.send (*draw_msg_);
+    delete draw_msg_;
+    draw_msg_ = 0;
+}
+
+void
+SimuReport::draw_circle (const vect_t &p, int radius, uint8_t color)
+{
+    draw_msg_->push ("BhhhB") << 'c' << p.x << p.y << radius << color;
+}
+
+void
+SimuReport::draw_segment (const vect_t &p1, const vect_t &p2, uint8_t color)
+{
+    draw_msg_->push ("BhhhhB") << 's' << p1.x << p1.y << p2.x << p2.y <<
+        color;
+}
+
+void
+SimuReport::draw_point (const vect_t &p, uint8_t color)
+{
+    draw_msg_->push ("BhhB") << 'p' << p.x << p.y << color;
+}
+
+void
+SimuReport::draw_number (const vect_t &p, int number)
+{
+    draw_msg_->push ("Bhhl") << 'n' << p.x << p.y << number;
 }
 

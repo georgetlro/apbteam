@@ -97,4 +97,5 @@ class Bag:
                 scheduler, 0., 1., .1, .1, 0.)
         self.path = link_bag.io_hub.path
         self.pos_report = link_bag.io_hub.pos_report
+        self.debug_draw = link_bag.io_hub.debug_draw
 
