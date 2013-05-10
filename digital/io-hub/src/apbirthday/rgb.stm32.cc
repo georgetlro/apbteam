@@ -244,7 +244,9 @@ Rgb::ic_isr ()
 
         if (router_)
         {
-            uint16_t v = (color_value_[BLUE] * 100) / cannon_ref_grey_;
+            uint16_t v = 100;
+            if (cannon_ref_grey_ != 0)
+                v = (color_value_[BLUE] * 100) / cannon_ref_grey_;
 
             if (v > 0 && v < 30)
             {
