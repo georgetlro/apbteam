@@ -271,7 +271,7 @@ top_fsm_gen_event ()
         Position pos = robot->asserv.get_position ();
         if (pos.v.y > pg_gifts_distance + BOT_SIZE_SIDE + 60)
         {
-            if (ANGFSM_CAN_HANDLE (AI, top_gifts_blocked))
+            if (ANGFSM_HANDLE (AI, top_gifts_blocked))
                 return true;
         }
         int arm_x = pos.v.x + bot_gift_arm_x;
