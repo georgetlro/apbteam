@@ -193,8 +193,8 @@ top_update ()
         const int front_offset = 0x07fb;
         const int back_offset = 0x09af;
 #else
-        const int front_offset = 0x042d;
-        const int back_offset = 0x05cc;
+        const int front_offset = 0x0531;
+        const int back_offset = 0x06d7;
 #endif
         if (top.candles.dir_sign == 1)
             cons = - robot->hardware.adc_cake_front.read () + front_offset;
