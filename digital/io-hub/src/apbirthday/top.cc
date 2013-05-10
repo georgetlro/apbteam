@@ -663,7 +663,7 @@ FSM_TRANS (TOP_PLATE_LEAVE, move_failure, TOP_DECISION)
 
 FSM_TRANS (TOP_CANNON_GOTO, move_success, TOP_CANNON_FIRING)
 {
-    ANGFSM_HANDLE (AI, cannon_fire);
+    robot->cannon.fire (robot->plate.get_plate_nb ());
 }
 
 FSM_TRANS (TOP_CANNON_GOTO, move_failure, TOP_DECISION)
@@ -822,6 +822,6 @@ FSM_TRANS (TOP_DEMO_PLATE_UP, top_demo_plate, TOP_DEMO_PLATE_DOWN)
 
 FSM_TRANS (TOP_DEMO_PLATE_DOWN, top_demo_plate, TOP_INIT_ACTUATORS)
 {
-    ANGFSM_HANDLE (AI, cannon_fire);
+    robot->cannon.fire ();
 }
 

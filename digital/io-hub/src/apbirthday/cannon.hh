@@ -35,10 +35,13 @@ class Cannon
             POS1 = 0x1290,
             POS2 = 0x0a00
         };
+        void fire (int duration = 1);
         // GPIO manipulation.
         static void blower_off ();
         static void blower_on (int speed);
         static void set_servo_pos (int pos);
+    public:
+        int duration_;
 };
 
 #endif // cannon_hh

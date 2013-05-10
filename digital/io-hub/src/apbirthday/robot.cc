@@ -385,7 +385,7 @@ Robot::proto_handle (ucoo::Proto &proto, char cmd, const uint8_t *args, int size
         break;
     case c ('v', 0):
         // Start the cannon
-        FSM_HANDLE (AI, cannon_fire);
+        cannon.fire ();
         break;
     case c ('A', 1):
         // Asserv position stats.
