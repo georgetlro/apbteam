@@ -60,7 +60,7 @@ class I2cQueue : public ucoo::I2cMaster::FinishedHandler
     /// Maximum status size.
     static const int status_size_max = 14;
     /// Maximum command size.
-    static const int command_size_max = 14;
+    static const int command_size_max = 18;
     /// Message header size.
     static const int header_size = 2;
     /// Maximum messages in queue.
