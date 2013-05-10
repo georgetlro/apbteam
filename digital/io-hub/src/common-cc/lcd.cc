@@ -78,7 +78,7 @@ LCD::robot_position (const Position &pos)
         ucoo::bytes_unpack (pos.v.y, 1),
         ucoo::bytes_unpack (pos.v.y, 0),
     };
-    send (buf, sizeof (buf));
+    send (buf, sizeof (buf), I2cQueue::TRANSIENT);
 }
 
 void
@@ -95,7 +95,7 @@ LCD::obstacles (const vect_t *pos, int pos_nb)
         buf[i++] = ucoo::bytes_unpack (pos[o].y, 1);
         buf[i++] = ucoo::bytes_unpack (pos[o].y, 0);
     }
-    send (buf, i);
+    send (buf, i, I2cQueue::TRANSIENT);
 }
 
 void
