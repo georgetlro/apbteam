@@ -51,10 +51,10 @@ void
 Strat::color_init ()
 {
     if (team_color)
-        plate_visited_[1] = false;
+        plate_visited_[1] = true;
     else
     {
-        plate_visited_[5 + 1] = false;
+        plate_visited_[5 + 1] = true;
         // TODO: plate out of reach.
         plate_visited_[0] = true;
         // TODO: this gift is out of reach.
