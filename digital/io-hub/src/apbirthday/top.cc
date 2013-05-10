@@ -121,7 +121,7 @@ top_follow_start ()
 
 /// Can follow cake, decide if this is a good thing, or leave.
 static Branch
-top_follow_or_leave ()
+top_follow_or_leave (bool wait_before_turn)
 {
     if (top_follow_start ())
     {
@@ -161,7 +161,8 @@ top_follow_or_leave ()
         }
         else
         {
-            robot->asserv.goto_angle (robot_angle);
+            if (!wait_before_turn)
+                robot->asserv.goto_angle (robot_angle);
             return FSM_BRANCH (turn);
         }
     }
@@ -322,6 +323,8 @@ ANGFSM_STATES (
             TOP_CANDLES_FOLLOW,
             // Candles: tangent move to escape from an obstacle.
             TOP_CANDLES_LEAVE_TANGENT_MOVE,
+            // Candles: wait a little bit before turning.
+            TOP_CANDLES_LEAVE_TURN_WAIT,
             // Candles: turn to leave, undeploy arm as soon as possible.
             TOP_CANDLES_LEAVE_TURN,
             // Candles: wait for slow undeploying.
@@ -487,7 +490,7 @@ FSM_TRANS (TOP_CANDLES_ENTER_TURN, robot_move_success,
            turn, TOP_CANDLES_LEAVE_TURN,
            candles, TOP_CANDLES_FOLLOW)
 {
-    return top_follow_or_leave ();
+    return top_follow_or_leave (false);
 }
 
 FSM_TRANS (TOP_CANDLES_ENTER_TURN, robot_move_failure, TOP_CANDLES_LEAVE_TURN)
@@ -500,23 +503,23 @@ FSM_TRANS (TOP_CANDLES_FOLLOW, top_follow_finished,
            turn, TOP_CANDLES_LEAVE_TURN,
            candles, TOP_CANDLES_FOLLOW)
 {
-    return top_follow_or_leave ();
+    return top_follow_or_leave (false);
 }
 
 FSM_TRANS (TOP_CANDLES_FOLLOW, top_follow_blocked,
            tangent, TOP_CANDLES_LEAVE_TANGENT_MOVE,
-           turn, TOP_CANDLES_LEAVE_TURN,
+           turn, TOP_CANDLES_LEAVE_TURN_WAIT,
            candles, TOP_CANDLES_FOLLOW)
 {
-    return top_follow_or_leave ();
+    return top_follow_or_leave (true);
 }
 
 FSM_TRANS (TOP_CANDLES_FOLLOW, robot_move_failure,
            tangent, TOP_CANDLES_LEAVE_TANGENT_MOVE,
-           turn, TOP_CANDLES_LEAVE_TURN,
+           turn, TOP_CANDLES_LEAVE_TURN_WAIT,
            candles, TOP_CANDLES_FOLLOW)
 {
-    return top_follow_or_leave ();
+    return top_follow_or_leave (true);
 }
 
 FSM_TRANS (TOP_CANDLES_LEAVE_TANGENT_MOVE, robot_move_success,
@@ -527,6 +530,11 @@ FSM_TRANS (TOP_CANDLES_LEAVE_TANGENT_MOVE, robot_move_success,
 
 FSM_TRANS (TOP_CANDLES_LEAVE_TANGENT_MOVE, robot_move_failure,
            TOP_CANDLES_LEAVE_TURN)
+{
+    robot->asserv.goto_angle (top_cake_angle_robot ());
+}
+
+FSM_TRANS_TIMEOUT (TOP_CANDLES_LEAVE_TURN_WAIT, 125, TOP_CANDLES_LEAVE_TURN)
 {
     robot->asserv.goto_angle (top_cake_angle_robot ());
 }
