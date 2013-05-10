@@ -53,18 +53,6 @@ Strat::Strat ()
 void
 Strat::color_init ()
 {
-    if (team_color)
-        plate_visited_[1] = true;
-    else
-    {
-        plate_visited_[5 + 1] = true;
-        // TODO: plate out of reach.
-        plate_visited_[0] = true;
-        // TODO: this gift is out of reach.
-        robot->gifts.open[3] = true;
-    }
-    // TODO: plate out of reach.
-    plate_visited_[9] = true;
     // Pre-computed positions.
     pos_[POS_CANDLES] = pg_cake_pos;
     for (int i = 0; i < plate_nb; i++)
@@ -90,6 +78,19 @@ Strat::color_init ()
     pos_[POS_GIFT_2].y = pg_gifts_distance + BOT_SIZE_SIDE;
     pos_[POS_GIFT_3].x = 2100;
     pos_[POS_GIFT_3].y = pg_gifts_distance + BOT_SIZE_SIDE;
+    // Out of reach and visited items.
+    if (team_color)
+        plate_visited_[1] = true;
+    else
+    {
+        plate_visited_[5 + 1] = true;
+        // TODO: plate out of reach.
+        plate_visited_[0] = true;
+        // TODO: this gift is out of reach.
+        robot->gifts.open[3] = true;
+    }
+    // TODO: plate out of reach.
+    plate_visited_[9] = true;
 }
 
 void
