@@ -49,6 +49,8 @@ static const int i2c_command_size = 16;
 
 static uint8_t i2c_seq;
 
+static bool i2c_received;
+
 /// Handle a command received by I2C.
 void
 i2c_handle (LCD &lcd, const char *buf, int size)
@@ -125,6 +127,7 @@ i2c_handle (LCD &lcd, const char *buf, int size)
         // Unknown command.
         return;
     }
+    i2c_received = true;
     // Acknowledge.
     i2c_seq = buf[1];
 }
@@ -264,11 +267,15 @@ main (int argc, const char **argv)
     // Wait orders.
     while (1)
     {	
-	draw_table (lcd);//draw the table 
-	draw_robot (lcd);//draw the robot and his destination on the table
+        if (i2c_received)
+        {
+            draw_table (lcd);//draw the table
+            draw_robot (lcd);//draw the robot and his destination on the table
+            i2c_received = false;
+        }
 
         i2c_poll (lcd, i2c_data);
-        ucoo::delay_ms (1000);
+        ucoo::delay_ms (4);
 	
     }
 }
