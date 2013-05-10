@@ -47,6 +47,8 @@ Strat::Strat ()
 {
     for (int i = 0; i < WAIT; i++)
         chrono_last_decision_[i] = -1;
+    for (int i = 0; i < Gifts::nb; i++)
+        chrono_last_decision_gift_min_[i] = -1;
     last_decision_ = WAIT;
 }
 
@@ -293,7 +295,7 @@ Strat::score_gifts_sub (Position &pos, int gift_min, int gift_max,
     if (pos_score_[p] == -1)
         return best_score;
     int score = score_offset_ - pos_score_[p] + nb * 1000
-        - chrono_malus (GIFTS);
+        - chrono_malus (GIFTS, gift_min);
 #ifdef TARGET_host
     robot->hardware.simu_report.draw_number
         ((vect_t) { robot->gifts.x[gift_min], pg_gifts_distance }, score);
@@ -316,6 +318,7 @@ Strat::score_gifts_sub (Position &pos, int gift_min, int gift_max,
         }
         gifts_decision_.end_pos.x = robot->gifts.x[max] - bot_gift_arm_x;
         gifts_decision_.end_pos.y = pg_gifts_distance + BOT_SIZE_SIDE;
+        last_gift_min_ = gift_min;
         return score;
     }
     else
@@ -344,8 +347,12 @@ Strat::decision (Position &pos)
 #endif
     // Avoid to take the same decision.
     if (last_decision_ != WAIT)
-        chrono_last_decision_[last_decision_] =
-            robot->chrono.remaining_time_ms ();
+    {
+        int now = robot->chrono.remaining_time_ms ();
+        chrono_last_decision_[last_decision_] = now;
+        if (last_decision_ == GIFTS)
+            chrono_last_decision_gift_min_[last_gift_min_] = now;
+    }
     // Plate?
     tscore = score_plate (tpos);
     if (tscore > best_score)
@@ -392,9 +399,13 @@ Strat::decision (Position &pos)
 }
 
 int
-Strat::chrono_malus (Decision decision)
+Strat::chrono_malus (Decision decision, int gift_min)
 {
-    int last = chrono_last_decision_[decision];
+    int last;
+    if (decision != GIFTS)
+        last = chrono_last_decision_[decision];
+    else
+        last = chrono_last_decision_gift_min_[gift_min];
     if (last == -1)
         return 0;
     int now = robot->chrono.remaining_time_ms ();
