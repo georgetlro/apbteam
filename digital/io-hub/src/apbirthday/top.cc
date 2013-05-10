@@ -145,7 +145,7 @@ top_follow_or_leave ()
         // If near an obstacle, also need to move to undeploy arm.
         else if (top_follow_blocking (1))
         {
-            dist = -100;
+            dist = -250;
         }
         // Do not use move_distance, it depends too much on current robot
         // orientation which is not stable.
