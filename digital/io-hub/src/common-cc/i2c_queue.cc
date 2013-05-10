@@ -62,8 +62,8 @@ I2cQueue::Slave::seq_next ()
     return seq_;
 }
 
-I2cQueue::I2cQueue (ucoo::I2cMaster &i2c)
-    : i2c_ (i2c), slaves_ (0), update_state_ (IDLE),
+I2cQueue::I2cQueue (ucoo::I2cMaster &i2c, bool can_drop)
+    : i2c_ (i2c), can_drop_ (can_drop), slaves_ (0), update_state_ (IDLE),
       queue_head_ (0), queue_tail_ (0), queue_timeout_ (0)
 {
     i2c_.register_finished (*this);
@@ -128,7 +128,11 @@ I2cQueue::send (Slave &slave, const uint8_t *command, int size,
     }
     else
     {
-        ucoo::assert (queue_head_ != queue_next (queue_tail_));
+        if (queue_head_ == queue_next (queue_tail_))
+        {
+            ucoo::assert (can_drop_);
+            return;
+        }
         c = &queue_[queue_tail_];
     }
     // Fill and copy data.

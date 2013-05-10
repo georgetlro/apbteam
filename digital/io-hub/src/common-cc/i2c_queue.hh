@@ -124,7 +124,7 @@ class I2cQueue : public ucoo::I2cMaster::FinishedHandler
     };
   public:
     /// Constructor.
-    I2cQueue (ucoo::I2cMaster &i2c);
+    I2cQueue (ucoo::I2cMaster &i2c, bool can_drop = false);
     /// Synchronise all slaves, return true if synchronised (no message in
     /// queue).
     bool sync ();
@@ -150,6 +150,8 @@ class I2cQueue : public ucoo::I2cMaster::FinishedHandler
   private:
     /// I2C interface.
     ucoo::I2cMaster &i2c_;
+    /// Can drop reliable command in case of big problem.
+    bool can_drop_;
     /// Chained list of slaves.
     Slave *slaves_;
     /// State of update FSM.

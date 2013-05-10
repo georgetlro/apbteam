@@ -37,7 +37,7 @@ Robot *robot;
 
 Robot::Robot ()
     : main_i2c_queue_ (hardware.main_i2c),
-      secondary_i2c_queue_ (hardware.secondary_i2c),
+      secondary_i2c_queue_ (hardware.secondary_i2c, true),
       zb_i2c_queue_ (hardware.zb_i2c),
       asserv (main_i2c_queue_, BOT_SCALE),
       mimot (main_i2c_queue_),
