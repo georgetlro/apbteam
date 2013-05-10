@@ -57,7 +57,8 @@ conv_pos (Rect &pos)
 	pos.x=(3000-pos.x) *320/3000;
 	pos.y=(2000-pos.y) *240/2000;
 	if(LCD::belong(pos.x,pos.y))
-	{return false;}	return true;
+		return false;	
+	return true;
 }
 
 void
@@ -89,14 +90,15 @@ i2c_handle (LCD &lcd, const char *buf, int size)
 		i2c_color[2]=arg[2];
         break;
     case 't':
-		if(arg[0]>90){strcpy(i2c_cmd,"ERROR I2C time");}
+		if(arg[0]>90)
+			strcpy(i2c_cmd,"ERROR I2C time");
 		i2c_time=arg[0];
 	break;
     case 'p': //position of the robot 
 		pos_r.x=ucoo::bytes_pack (arg[0] ,arg [1] );//position in mm
 	pos_r.y=ucoo::bytes_pack (arg[2] ,arg [3] );
 	if(!conv_pos(pos_r))
-		{strcpy(i2c_cmd,"ERROR I2C position");}	
+		strcpy(i2c_cmd,"ERROR I2C position");
 	break;
     case 'm': //message 
 		strcpy(i2c_cmd,arg);
@@ -111,14 +113,14 @@ i2c_handle (LCD &lcd, const char *buf, int size)
 			pos_obs[j].y=ucoo::bytes_pack (arg[i+2] ,arg [i+3] );
 			j++;
 			if(!conv_pos(pos_obs[j]))
-			{strcpy(i2c_cmd,"ERROR I2C obstacle");}
+				strcpy(i2c_cmd,"ERROR I2C obstacle");
 		}
 	break;
     case 'n'://next position of the robot 
 	pos_r_n.x=ucoo::bytes_pack (arg[0] ,arg [1] );
 	pos_r_n.y=ucoo::bytes_pack (arg[2] ,arg [3] );
 	if(!conv_pos(pos_r_n))
-	{strcpy(i2c_cmd,"ERROR I2C next pos");}
+		strcpy(i2c_cmd,"ERROR I2C next pos");
 	break;
     default:
         // Unknown command.
@@ -177,10 +179,15 @@ draw_time (LCD lcd) //write the remaining time
 	Rect pos_d;pos_d.x=292;pos_d.y=223;//digit one 
 	char dizaine = i2c_time/10 +48;
 	char unite = i2c_time%10 +48;
-	if(i2c_time<0){lcd.draw_sentence (0,"ERROR",pos_d);}
-	else{
-	if(i2c_time/10!=0){lcd.draw_char( 0 ,dizaine,pos_d);}
-	lcd.draw_char( 0 ,unite,pos_u);}
+	
+	if(i2c_time<0)
+		lcd.draw_sentence (0,"ERROR",pos_d);
+	else
+	{
+		if(i2c_time/10!=0)
+		lcd.draw_char( 0 ,dizaine,pos_d);
+		lcd.draw_char( 0 ,unite,pos_u);
+	}
 
 }
 void 
@@ -253,10 +260,10 @@ main (int argc, const char **argv)
     ucoo::I2cSlaveDataBufferSize<i2c_status_size, i2c_command_size> i2c_data;
     i2c.register_data (0x20, i2c_data);
     //Init global variable 
-	i2c_color[0]=0;i2c_color[1]=0;i2c_color[2]=0;
-	i2c_time=90;
-	pos_r_n.x=160;pos_r_n.y=120;
-	pos_r.x=160;pos_r.y=120;
+    i2c_color[0]=0;i2c_color[1]=0;i2c_color[2]=0;
+    i2c_time=90;
+    pos_r_n.x=160;pos_r_n.y=120;
+    pos_r.x=160;pos_r.y=120;
     // Init.
     LCD lcd;
 	//ucoo::delay_ms (1000);

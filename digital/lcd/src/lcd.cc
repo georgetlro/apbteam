@@ -227,22 +227,24 @@ void
 LCD::rectangle_fill (uint16_t color,Rect format, Rect pos)//make a filled rectangle 
 {
 	set_cursor(pos.x , pos.y);
-	if(format.x+pos.x> x_max){format.x=x_max-pos.x;}
-	if(format.y+pos.y> y_max){format.y=y_max-pos.y;}
+	if(format.x+pos.x> x_max)
+		format.x=x_max-pos.x;
+	if(format.y+pos.y> y_max)
+		format.y=y_max-pos.y;
 	if(format.x>=0 && format.y >=0)
 	{	
-	for(int i=0 ; i<format.y ; i++)
-	{
-		cs_.reset();
-		write_index (0x0022);
-		for(int j=0 ; j<format.x ; j++)
+		for(int i=0 ; i<format.y ; i++)
 		{
-			write_data(color);
+			cs_.reset();
+			write_index (0x0022);
+			for(int j=0 ; j<format.x ; j++)
+			{
+				write_data(color);
+			}
+			cs_.set();
+		pos.y++;
+		set_cursor(pos.x , pos.y);
 		}
-		cs_.set();
-	pos.y++;
-	set_cursor(pos.x , pos.y);
-	}
 	}
 	
 }
@@ -282,7 +284,8 @@ LCD::rectangle_empty (uint16_t color,Rect format, Rect pos) //make the border of
 void
 LCD::blit_pixel ( uint16_t color , int x , int y)//blit a pixel if he is on the screen 
 {
-	if(x<0 || x>x_max ||y<0 || y>y_max){return;}	
+	if(x<0 || x>x_max ||y<0 || y>y_max)
+		return;
 	set_cursor(x,y);
 	cs_.reset();
 	write_index (0x0022);
@@ -299,28 +302,28 @@ LCD::circle ( uint16_t color , int radius , Rect pos) //draw a circle (no proble
 	while(x<=y)
 	{
 		if(belong (x+pos.x , y+pos.y))		
-		{blit_pixel(color , x+pos.x , y+pos.y);}
+			blit_pixel(color , x+pos.x , y+pos.y);
 		
 		if(belong ( y+pos.x , x+pos.y))
-		{blit_pixel(color , y+pos.x , x+pos.y);}
+			blit_pixel(color , y+pos.x , x+pos.y);
 
 		if(belong (-x+pos.x , y+pos.y))
-		{blit_pixel(color , -x+pos.x , y+pos.y);}
+			blit_pixel(color , -x+pos.x , y+pos.y);
 
 		if(belong (-y+pos.x , x+pos.y))
-		{blit_pixel(color , -y+pos.x , x+pos.y);}
+			blit_pixel(color , -y+pos.x , x+pos.y);
 
 		if(belong (x+pos.x , -y+pos.y))
-		{blit_pixel(color , x+pos.x , -y+pos.y);}
+			blit_pixel(color , x+pos.x , -y+pos.y);
 
 		if(belong ( y+pos.x , -x+pos.y))
-		{blit_pixel(color , y+pos.x , -x+pos.y);}
+			blit_pixel(color , y+pos.x , -x+pos.y);	
 
 		if(belong (-x+pos.x , -y+pos.y))
-		{blit_pixel(color , -x+pos.x , -y+pos.y);}
+			blit_pixel(color , -x+pos.x , -y+pos.y);
 
 		if(belong (-y+pos.x , -x+pos.y))
-		{blit_pixel(color , -y+pos.x , -x+pos.y);}
+			blit_pixel(color , -y+pos.x , -x+pos.y);
 	
 		if(m > 0)
 		{
@@ -335,7 +338,7 @@ bool
 LCD::belong (int x , int y) //test if the point A(x,y) belong to the screen 
 {
 	if(0<=x && x<=x_max && 0<=y && y<=y_max)
-	{return true;}
+		return true;
 	return false;
 }
 void 
@@ -347,7 +350,8 @@ LCD::draw_char( uint16_t color ,char caract, Rect pos)//draw a caracter
 	{
 		for( int j =7 ; j>=0 ; j--)
 		{
-			if(Ascii[caract][i]&(1<<j)){blit_pixel(color,8-j+pos.x,i+pos.y);}
+			if(Ascii[caract][i]&(1<<j))
+				blit_pixel(color,8-j+pos.x,i+pos.y);
 		}
 	}
 }
