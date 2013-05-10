@@ -35,6 +35,8 @@ class Plate
         void ppp ();
         // Read only: 1 if plate is up, 0 otherwhise
         int is_up;
+        // Take a plate.
+        void take (bool wait_before_up = false);
         // GPIO manipulation.
         static void arm_down ();
         static void arm_up ();
@@ -42,6 +44,8 @@ class Plate
         static void clamp_close ();
     private:
         int nb_plate;
+    public:
+        bool wait_before_up_;
 };
 
 inline int Plate::get_plate_nb ()

@@ -55,6 +55,8 @@ class Strat
         int plate;
         /// Leave movement after plate is taken.
         bool leave;
+        /// Pull the plate after pickup.
+        bool pull;
         /// Approach position, where the robot should be before starting
         /// approaching.
         Position approaching_pos;

@@ -447,7 +447,7 @@ Robot::proto_handle (ucoo::Proto &proto, char cmd, const uint8_t *args, int size
         // - 00: up
         // - 01: down
         if (args[0] == 0)
-            FSM_HANDLE (AI, plate_take);
+            plate.take ();
         else if (args[0] == 1)
             FSM_HANDLE (AI, plate_drop);
         break;

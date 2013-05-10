@@ -31,6 +31,13 @@ Plate::Plate ()
     is_up = 0;
 }
 
+void
+Plate::take (bool wait_before_up)
+{
+    wait_before_up_ = wait_before_up;
+    ANGFSM_HANDLE (AI, plate_take);
+}
+
 inline void Plate::arm_down ()
 {
     robot->hardware.cherry_plate_down.set (true);
@@ -63,6 +70,7 @@ FSM_STATES (PLATE_OFF,
             PLATE_INIT_DOWNING,
             PLATE_READY,
             PLATE_TAKE_GLUE,
+            PLATE_TAKE_UPING_WAIT,
             PLATE_TAKE_UPING,
             PLATE_I_HAZ_PLATE,
             PLATE_DROP_DOWNING,
@@ -72,7 +80,9 @@ FSM_STATES (PLATE_OFF,
 FSM_EVENTS (plate_take,
             plate_taken,
             plate_drop,
-            plate_droped)
+            plate_droped,
+            plate_waiting,
+            plate_up)
 
 FSM_START_WITH (PLATE_OFF)
 
@@ -116,7 +126,23 @@ FSM_TRANS (PLATE_READY, plate_take, PLATE_TAKE_GLUE)
     Plate::clamp_close ();
 }
 
-FSM_TRANS_TIMEOUT (PLATE_TAKE_GLUE, 100, PLATE_TAKE_UPING)
+FSM_TRANS_TIMEOUT (PLATE_TAKE_GLUE, 100,
+                   wait, PLATE_TAKE_UPING_WAIT,
+                   nowait, PLATE_TAKE_UPING)
+{
+    if (robot->plate.wait_before_up_)
+    {
+        robot->fsm_queue.post (FSM_EVENT (plate_waiting));
+        return ANGFSM_BRANCH (wait);
+    }
+    else
+    {
+        Plate::arm_up ();
+        return ANGFSM_BRANCH (nowait);
+    }
+}
+
+FSM_TRANS (PLATE_TAKE_UPING_WAIT, plate_up, PLATE_TAKE_UPING)
 {
     Plate::arm_up ();
 }

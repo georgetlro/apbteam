@@ -332,6 +332,10 @@ ANGFSM_STATES (
             TOP_PLATE_GOTO,
             // Plate: go backward until a plate is seen.
             TOP_PLATE_APPROACH,
+            // Plate: wait until clamp closed.
+            TOP_PLATE_WAIT_CLOSE,
+            // Plate: pull the plate.
+            TOP_PLATE_PULLING,
             // Plate: loading plate.
             TOP_PLATE_LOADING,
             // Plate: drop plate.
@@ -590,11 +594,33 @@ FSM_TRANS (TOP_PLATE_APPROACH, move_failure, TOP_DECISION)
     robot->strat.failure ();
 }
 
-FSM_TRANS (TOP_PLATE_APPROACH, top_plate_present, TOP_PLATE_LOADING)
+FSM_TRANS (TOP_PLATE_APPROACH, top_plate_present,
+           wait, TOP_PLATE_WAIT_CLOSE,
+           nowait, TOP_PLATE_LOADING)
 {
     robot->strat.success ();
     robot->move.stop ();
-    ANGFSM_HANDLE (AI, plate_take);
+    robot->plate.take (top.plate.pull);
+    if (top.plate.pull)
+        return FSM_BRANCH (wait);
+    else
+        return FSM_BRANCH (nowait);
+}
+
+FSM_TRANS (TOP_PLATE_WAIT_CLOSE, plate_waiting, TOP_PLATE_PULLING)
+{
+    robot->asserv.move_distance (30);
+}
+
+FSM_TRANS (TOP_PLATE_PULLING, robot_move_success, TOP_PLATE_LOADING)
+{
+    ANGFSM_HANDLE (AI, plate_up);
+}
+
+FSM_TRANS (TOP_PLATE_PULLING, robot_move_failure, TOP_PLATE_LOADING)
+{
+    // Ignore failure, continue.
+    ANGFSM_HANDLE (AI, plate_up);
 }
 
 FSM_TRANS (TOP_PLATE_LOADING, plate_taken, TOP_PLATE_DROPING)
@@ -778,7 +804,7 @@ FSM_TRANS (TOP_DEMO_CANDLE_ARM_NEAR, top_demo_candle_arm, TOP_INIT_ACTUATORS)
 
 FSM_TRANS (TOP_INIT_ACTUATORS, top_demo_plate, TOP_DEMO_PLATE_UP)
 {
-    ANGFSM_HANDLE (AI, plate_take);
+    robot->plate.take ();
 }
 
 FSM_TRANS (TOP_DEMO_PLATE_UP, top_demo_plate, TOP_DEMO_PLATE_DOWN)

@@ -150,7 +150,7 @@ Strat::score_plate (Position &pos)
 {
     int plate = -1, score = -1;
     bool above = false, below = false;
-    bool leave = true;
+    bool leave = true, pull = false;
     // Important start points.
     if (team_color)
     {
@@ -166,6 +166,7 @@ Strat::score_plate (Position &pos)
             plate = 0;
             above = true;
             score = 100000;
+            pull = true;
         }
     }
     else
@@ -176,6 +177,7 @@ Strat::score_plate (Position &pos)
             above = true;
             score = 100000;
             leave = false;
+            pull = true;
         }
         else if (!plate_visited_[2 + 5])
         {
@@ -247,6 +249,7 @@ Strat::score_plate (Position &pos)
         plate_decision_.approaching_pos = pos;
         plate_decision_.plate = plate;
         plate_decision_.leave = leave;
+        plate_decision_.pull = pull;
     }
     return score;
 }
