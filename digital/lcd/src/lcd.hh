@@ -66,6 +66,9 @@ class LCD
     void draw_char( uint16_t color ,char caract, Rect pos); 
     ///write a sentence center on pos 
     void draw_sentence( uint16_t color ,const char *sentence, Rect pos);
+    ///write a sentence first caractere has pos as position 
+    int draw_sentence_left( uint16_t color ,const char *sentence, Rect pos);
+    int belong ( int x, int y); //does the point belong to the screen?
   private:
     void set_cursor (int x, int y);
     void write_index (uint16_t index);
@@ -73,7 +76,6 @@ class LCD
     uint16_t read_data ();
     void write_reg (uint16_t index, uint16_t data);
     uint16_t read_reg (uint16_t index);
-    int belong ( int x, int y); //does the point belong to the screen?
   private:
     ucoo::Gpio cs_, rs_, wr_, rd_, reset_, bl_;
 };

@@ -373,6 +373,28 @@ LCD::draw_sentence( uint16_t color ,const char *sentence, Rect pos) //write a se
 		car_act =sentence[i];
 	}
 }
+int
+LCD::draw_sentence_left( uint16_t color ,const char *sentence, Rect pos) //write a sentence non center 
+{
+	char car_act='A'; //carat actuel
+	int i=0;
+	car_act =sentence[i];	
+	while(car_act!='\0')
+	{
+		i++;
+		car_act =sentence[i];
+	}
+	i=0;
+	car_act =sentence[i];	
+	while(car_act!='\0')
+	{
+		draw_char (color ,car_act,pos);
+		pos.x=pos.x+8;
+		i++;
+		car_act =sentence[i];
+	}
+	return pos.x+8;
+}
 
 
 

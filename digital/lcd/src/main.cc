@@ -70,7 +70,9 @@ i2c_handle (LCD &lcd, const char *buf, int size)
     char cmd = buf[2];
     const char *arg = &buf[3];
     int arg_nb = size - 3;
-    int j;
+    int j;//for incrementation
+    int x;
+    int y;
     switch (cmd)
     {
     case 'c':
@@ -82,28 +84,42 @@ i2c_handle (LCD &lcd, const char *buf, int size)
 		i2c_color[2]=arg[2];
         break;
     case 't':
+		if(arg[0]<0 || arg[0]>90){strcpy(i2c_cmd,"ERROR I2C time");}
 		i2c_time=arg[0];
 	break;
     case 'p': //position of the robot 
-		pos_r.x=ucoo::bytes_pack (arg[0] ,arg [1] )*0.10666;
-		pos_r.y=ucoo::bytes_pack (arg[2] ,arg [3] )*0.10666;	
+		x=ucoo::bytes_pack (arg[0] ,arg [1] )*0.10666;
+		y=ucoo::bytes_pack (arg[2] ,arg [3] )*0.10666;
+		if(lcd.belong (x,y))
+		{pos_r.x=ucoo::bytes_pack (arg[0] ,arg [1] )*0.10666;
+		pos_r.y=ucoo::bytes_pack (arg[2] ,arg [3] )*0.10666;}
+		else{strcpy(i2c_cmd,"ERROR I2C position");}	
 	break;
     case 'm': //message 
 		strcpy(i2c_cmd,arg);
+	break;	
+		
     case 'o': //obstacle (barrier)
 		j=0;		
 		nb_obs=arg[0];
 		for(int i=1 ; i<=nb_obs*4 ; i=i+4)
 		{
-			pos_obs[j].x=ucoo::bytes_pack (arg[i] ,arg [i+1] )*0.10666;
+			x=ucoo::bytes_pack (arg[i] ,arg [i+1] )*0.10666;
+			y=ucoo::bytes_pack (arg[i+2] ,arg [i+3] )*0.10666;
+			if(lcd.belong (x,y))
+			{ pos_obs[j].x=ucoo::bytes_pack (arg[i] ,arg [i+1] )*0.10666;
 
 			pos_obs[j].y=ucoo::bytes_pack (arg[i+2] ,arg [i+3] )*0.10666;
-			j++;
+			j++;}
+			else{strcpy(i2c_cmd,"ERROR I2C obstacle");}
 		}
 	break;
     case 'n'://next position of the robot 
-	pos_r_n.x=ucoo::bytes_pack (arg[0] ,arg [1] )*0.10666;
-	pos_r_n.y=ucoo::bytes_pack (arg[2] ,arg [3] )*0.10666;
+	x=ucoo::bytes_pack (arg[0] ,arg [1] )*0.10666;
+	y=ucoo::bytes_pack (arg[2] ,arg [3] )*0.10666;
+	if(lcd.belong (x,y))
+	{pos_r_n.x=ucoo::bytes_pack (arg[0] ,arg [1] )*0.10666;
+	pos_r_n.y=ucoo::bytes_pack (arg[2] ,arg [3] )*0.10666;}
 	break;
     default:
         // Unknown command.
@@ -151,9 +167,6 @@ draw_robot (LCD lcd) //draw of the robot and his barriers
 	lcd.rectangle_fill (LCD::color (0,255,0),size_dest ,pos_rob_n);
 	
 }
-
-
-
 void 
 draw_time (LCD lcd) //write the remaining time 
 {	
@@ -250,9 +263,10 @@ main (int argc, const char **argv)
 	draw_table (lcd);
     // Wait orders.
     while (1)
-    {
+    {	
 	draw_table (lcd);//draw the table 
-	draw_robot (lcd);//draw the robot and his destination on the table 
+	draw_robot (lcd);//draw the robot and his destination on the table
+
         i2c_poll (lcd, i2c_data);
         ucoo::delay_ms (1000);
 	
