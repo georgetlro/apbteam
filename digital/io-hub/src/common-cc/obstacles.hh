@@ -79,6 +79,14 @@ class Obstacles
     static const int same_mm_ = 150;
     /// Set when changed since last update.
     bool changed_;
+    /// Change report rate limit.
+#ifdef TARGET_host
+    static const int report_rate_limit_ = 0;
+#else
+    static const int report_rate_limit_ = 125;
+#endif
+    /// Change report rate limit counter.
+    int report_rate_limit_cpt_;
     /// Single obstacle.
     struct Obstacle
     {

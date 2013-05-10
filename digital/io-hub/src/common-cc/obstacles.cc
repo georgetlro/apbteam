@@ -35,7 +35,7 @@ extern "C" {
 #endif
 
 Obstacles::Obstacles ()
-    : changed_ (false)
+    : changed_ (false), report_rate_limit_cpt_ (0)
 {
     for (int i = 0; i < obstacles_nb_; i++)
         obstacles_[i].valid = 0;
@@ -53,7 +53,7 @@ Obstacles::update ()
                 changed_ = true;
         }
     }
-    if (changed_)
+    if (changed_ && !report_rate_limit_cpt_)
     {
         vect_t o[obstacles_nb_];
         int o_nb = 0;
@@ -67,8 +67,11 @@ Obstacles::update ()
         r.pos (o, o_nb, 0);
 #endif
         robot->lcd.obstacles (o, o_nb);
+        changed_ = false;
+        report_rate_limit_cpt_ = report_rate_limit_;
     }
-    changed_ = false;
+    if (report_rate_limit_cpt_)
+        report_rate_limit_cpt_--;
 }
 
 void
