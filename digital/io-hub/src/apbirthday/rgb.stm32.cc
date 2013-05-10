@@ -125,7 +125,7 @@ Rgb::calibrate_cannon_sensor ()
 {
     // Do a measure to get current light situation
     do_measure (CANNON, false);
-    cannon_offset_ = BASIC_GREY - color_value_[BLUE];
+    cannon_ref_grey_ = color_value_[BLUE];
 }
 
 void
@@ -244,25 +244,26 @@ Rgb::ic_isr ()
 
         if (router_)
         {
-            uint16_t v = color_value_[BLUE] + cannon_offset_;
-            if (v > 120 && v < 165)
+            uint16_t v = (color_value_[BLUE] * 100) / cannon_ref_grey_;
+
+            if (v > 0 && v < 30)
+            {
+                seen_white_ = true;
+            }
+            else if (v > 30 && v < 90)
             {
                 // we don't know if it's blue or red, and we don't care
                 // It's colored and must be thrown out !
                 seen_color_ = true;
             }
-            else if (v > 40 && v < 100)
-            {
-                seen_white_ = true;
-            }
             // Check if we are seeing GREY again
-            else if (v > 180 && v < 210)
+            else if (v > 90)
             {
                 // If we have seen color
                 if (seen_color_ && !seen_white_)
                 {
                     robot->hardware.cherry_bad_out.set (true);
-                    router_timer_ = 4;
+                    router_timer_ = 18;
                 }
                 seen_color_ = seen_white_ = false;
             }

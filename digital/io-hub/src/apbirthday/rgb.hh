@@ -26,10 +26,6 @@
 
 #include "ucoolib/hal/gpio/gpio.hh"
 
-/* This value was determined during tests using a BLUE filter */
-/* This will only be used for the cannon method */
-#define BASIC_GREY 190
-
 class Rgb
 {
     public:
@@ -79,7 +75,7 @@ class Rgb
 
         ucoo::Gpio* g[RGB_TYPE_NB];
         enum rgb_type type_;
-        uint32_t cannon_offset_;
+        uint32_t cannon_ref_grey_;
         bool router_;
         bool seen_color_, seen_white_;
         int measure_cnt_;
