@@ -30,6 +30,7 @@ from simu.robots.apbirthday.model import front, back, side
 COLOR_ROBOT = '#000000'
 COLOR_AXES = '#202040'
 COLOR_CANNON = '#808080'
+COLOR_CANNON_FIRE = '#800000'
 COLOR_BALLON = '#ff0000'
 
 class Robot (simu.inter.drawable.Drawable):
@@ -79,7 +80,8 @@ class Robot (simu.inter.drawable.Drawable):
             self.draw_polygon ((front, side), (front, -side), (-back, -side),
                     (-back, 81), (-50, side), fill = COLOR_ROBOT)
             self.draw_circle ((50, self.cannon_model.cannon_hit[1]), 20,
-                    fill = COLOR_CANNON)
+                    fill = COLOR_CANNON_FIRE if self.cannon_model.firing
+                    else COLOR_CANNON)
             # Draw Robot axis.
             self.draw_line ((-50, 0), (50, 0), fill = COLOR_AXES,
                     arrow = 'last')

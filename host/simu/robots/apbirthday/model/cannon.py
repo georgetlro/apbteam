@@ -31,8 +31,7 @@ from simu.robots.apbirthday.model import back
 
 class Cannon (Observable):
 
-    # TODO: update distance with real robot.
-    cannon_hit = (1000, 80)
+    cannon_hit = (700, 100)
 
     def __init__ (self, table, robot_position,
             arm_cyl, clamp_cyl, contacts, pot):
@@ -96,7 +95,8 @@ class Cannon (Observable):
         self.notify ()
 
     def __pot_notified (self):
-        if self.cherries and self.pot.wiper[0] > 0.5:
+        self.firing = self.pot.wiper[0] > .5
+        if self.cherries and self.firing:
             m = TransMatrix ()
             m.translate (self.robot_position.pos)
             m.rotate (self.robot_position.angle)
