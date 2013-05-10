@@ -23,18 +23,17 @@
 // }}}
 #include "lcd.hh"
 
+
 #include "ucoolib/arch/arch.hh"
 #include "ucoolib/utils/delay.hh"
 #include <libopencm3/stm32/f4/rcc.h>
 #include <cstring>
-
+#include <cstdio>
 
 #include "ucoolib/hal/i2c/i2c.hh"
 #include "ucoolib/utils/crc.hh"
 #include "ucoolib/utils/bytes.hh"
 //uint16_t ucoo::bytes_pack (arg 1 ,arg 2 );
-
-
 
 static char i2c_color[3];
 static int i2c_time;
@@ -52,6 +51,15 @@ static uint8_t i2c_seq;
 static bool i2c_received;
 
 /// Handle a command received by I2C.
+bool 
+conv_pos (Rect &pos)
+{
+	pos.x=(3000-pos.x) *320/3000;
+	pos.y=(2000-pos.y) *240/2000;
+	if(LCD::belong(pos.x,pos.y))
+	{return false;}	return true;
+}
+
 void
 i2c_handle (LCD &lcd, const char *buf, int size)
 {
@@ -70,8 +78,6 @@ i2c_handle (LCD &lcd, const char *buf, int size)
     const char *arg = &buf[3];
     int arg_nb = size - 3;
     int j;//for incrementation
-    int x;
-    int y;
     switch (cmd)
     {
     case 'c':
@@ -83,16 +89,14 @@ i2c_handle (LCD &lcd, const char *buf, int size)
 		i2c_color[2]=arg[2];
         break;
     case 't':
-		if(arg[0]<0 || arg[0]>90){strcpy(i2c_cmd,"ERROR I2C time");}
+		if(arg[0]>90){strcpy(i2c_cmd,"ERROR I2C time");}
 		i2c_time=arg[0];
 	break;
     case 'p': //position of the robot 
-		x=ucoo::bytes_pack (arg[0] ,arg [1] )*0.10666;
-		y=ucoo::bytes_pack (arg[2] ,arg [3] )*0.10666;
-		if(lcd.belong (x,y))
-		{pos_r.x=ucoo::bytes_pack (arg[0] ,arg [1] )*0.10666;
-		pos_r.y=ucoo::bytes_pack (arg[2] ,arg [3] )*0.10666;}
-		else{strcpy(i2c_cmd,"ERROR I2C position");}	
+		pos_r.x=ucoo::bytes_pack (arg[0] ,arg [1] );//position in mm
+	pos_r.y=ucoo::bytes_pack (arg[2] ,arg [3] );
+	if(!conv_pos(pos_r))
+		{strcpy(i2c_cmd,"ERROR I2C position");}	
 	break;
     case 'm': //message 
 		strcpy(i2c_cmd,arg);
@@ -103,22 +107,18 @@ i2c_handle (LCD &lcd, const char *buf, int size)
 		nb_obs=arg[0];
 		for(int i=1 ; i<=nb_obs*4 ; i=i+4)
 		{
-			x=ucoo::bytes_pack (arg[i] ,arg [i+1] )*0.10666;
-			y=ucoo::bytes_pack (arg[i+2] ,arg [i+3] )*0.10666;
-			if(lcd.belong (x,y))
-			{ pos_obs[j].x=ucoo::bytes_pack (arg[i] ,arg [i+1] )*0.10666;
-
-			pos_obs[j].y=ucoo::bytes_pack (arg[i+2] ,arg [i+3] )*0.10666;
-			j++;}
-			else{strcpy(i2c_cmd,"ERROR I2C obstacle");}
+			pos_obs[j].x=ucoo::bytes_pack (arg[i] ,arg [i+1] );
+			pos_obs[j].y=ucoo::bytes_pack (arg[i+2] ,arg [i+3] );
+			j++;
+			if(!conv_pos(pos_obs[j]))
+			{strcpy(i2c_cmd,"ERROR I2C obstacle");}
 		}
 	break;
     case 'n'://next position of the robot 
-	x=ucoo::bytes_pack (arg[0] ,arg [1] )*0.10666;
-	y=ucoo::bytes_pack (arg[2] ,arg [3] )*0.10666;
-	if(lcd.belong (x,y))
-	{pos_r_n.x=ucoo::bytes_pack (arg[0] ,arg [1] )*0.10666;
-	pos_r_n.y=ucoo::bytes_pack (arg[2] ,arg [3] )*0.10666;}
+	pos_r_n.x=ucoo::bytes_pack (arg[0] ,arg [1] );
+	pos_r_n.y=ucoo::bytes_pack (arg[2] ,arg [3] );
+	if(!conv_pos(pos_r_n))
+	{strcpy(i2c_cmd,"ERROR I2C next pos");}
 	break;
     default:
         // Unknown command.
@@ -258,7 +258,6 @@ main (int argc, const char **argv)
 	pos_r_n.x=160;pos_r_n.y=120;
 	pos_r.x=160;pos_r.y=120;
     // Init.
-	
     LCD lcd;
 	//ucoo::delay_ms (1000);
 	draw_table (lcd);

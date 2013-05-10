@@ -68,7 +68,7 @@ class LCD
     void draw_sentence( uint16_t color ,const char *sentence, Rect pos);
     ///write a sentence first caractere has pos as position 
     int draw_sentence_left( uint16_t color ,const char *sentence, Rect pos);
-    int belong ( int x, int y); //does the point belong to the screen?
+    static bool belong ( int x, int y); //does the point belong to the screen?
   private:
     void set_cursor (int x, int y);
     void write_index (uint16_t index);

@@ -331,12 +331,12 @@ LCD::circle ( uint16_t color , int radius , Rect pos) //draw a circle (no proble
 		m=m+8*x+4;
 	}
 }
-int 
+bool 
 LCD::belong (int x , int y) //test if the point A(x,y) belong to the screen 
 {
 	if(0<=x && x<=x_max && 0<=y && y<=y_max)
-	{return 1;}
-	return 0;
+	{return true;}
+	return false;
 }
 void 
 LCD::draw_char( uint16_t color ,char caract, Rect pos)//draw a caracter
