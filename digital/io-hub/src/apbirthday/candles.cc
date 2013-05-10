@@ -57,7 +57,8 @@ void Candles::blow (int candle)
         actual_pos[FAR] = candle;
     else
         actual_pos[NEAR] = candle;
-    deduce ();
+    // Deactivated because of bad color measurement.
+    //deduce ();
     robot->fsm_queue.post (FSM_EVENT (ai_candle_blow));
 }
 
