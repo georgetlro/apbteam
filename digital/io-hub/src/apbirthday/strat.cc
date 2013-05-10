@@ -128,6 +128,7 @@ Strat::score_pos ()
 int
 Strat::score_candles (Position &pos)
 {
+    candles_tries_ = 0;
     if (pos_score_[POS_CANDLES] == -1)
         return -1;
     // TODO: +1/-1 until candles at ends can be reached.
