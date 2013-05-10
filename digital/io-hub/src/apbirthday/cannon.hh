@@ -42,7 +42,7 @@ class Cannon
         };
         // GPIO manipulation.
         static void blower_off ();
-        static void blower_on ();
+        static void blower_on (int speed);
         static void set_servo_pos (int pos);
 };
 

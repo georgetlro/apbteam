@@ -30,10 +30,12 @@ Cannon::Cannon ()
     // Init the cannon and the RGB sensor
 }
 
-inline void Cannon::blower_on ()
+inline void Cannon::blower_on (int speed)
 {
     // Start the blower
+    // speed is between 0-256 (max->min)
     robot->pot_regul.set_wiper(0, 256);
+    robot->pot_regul.set_wiper(1, speed);
 }
 
 inline void Cannon::blower_off ()
@@ -61,7 +63,6 @@ FSM_START_WITH (CANNON_TRAP_OFF)
 
 FSM_TRANS (CANNON_TRAP_OFF, init_actuators, CANNON_TRAP_BLOCK)
 {
-    robot->pot_regul.set_wiper (1, 23);
     Cannon::set_servo_pos (Cannon::BLOCK);
 }
 
@@ -102,7 +103,7 @@ FSM_START_WITH (CANNON_OFF)
 FSM_TRANS (CANNON_OFF, init_actuators, CANNON_PURGING)
 {
     // Start the blower to purge the canon
-    robot->cannon.blower_on ();
+    robot->cannon.blower_on (0);
 }
 
 FSM_TRANS_TIMEOUT (CANNON_PURGING, 500, CANNON_READY)
@@ -114,7 +115,7 @@ FSM_TRANS_TIMEOUT (CANNON_PURGING, 500, CANNON_READY)
 FSM_TRANS (CANNON_READY, cannon_fire, CANNON_FIRING)
 {
     // Start the blower
-    Cannon::blower_on ();
+    Cannon::blower_on (23);
     // Start RGB sensor
     robot->rgb.calibrate_cannon_sensor ();
     robot->rgb.start_cannon_color ();
