@@ -65,7 +65,7 @@ Robot::Robot ()
       usdist3_ (usdist_control_, hardware.adc_dist3, hardware.dist3_sync, 100, 700, 650,
                 hardware.adc_dist3.get_resolution () * 2040 / 3300),
       radar_ (usdist0_, usdist1_, usdist2_, usdist3_),
-      candles (1),
+      candles (0),
       rgb (&hardware.rgb_cannon, &hardware.rgb_candle_far, &hardware.rgb_candle_near),
       fsm_debug_state_ (FSM_DEBUG_RUN),
       outputs_set_ (outputs_, lengthof (outputs_)),
